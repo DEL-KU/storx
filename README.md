@@ -1,4 +1,4 @@
-[![MATLAB Tests](https://github.com/amirzend/Introduction2TOusingMATLAB/actions/workflows/matlab_tests.yml/badge.svg?branch=main)](https://github.com/amirzend/Introduction2TOusingMATLAB/actions/workflows/matlab_tests.yml)
+[![MATLAB Tests](https://github.com/DEL-KU/storx/actions/workflows/matlab_tests.yml/badge.svg?branch=main)](https://github.com/DEL-KU/storx/actions/workflows/matlab_tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 
@@ -14,8 +14,6 @@ This repository contains the core functionalities for shape optimization (SO) an
 It is intended to be used as the accompanying code for the:
 
 1) Amir M. Mirzendehdel and Krishnan Suresh, **STORX: an Open-Source Object-Oriented Framework for Shape and Topology Optimization in MATLAB**, 2026 
- 
- <!-- ***Introduction to Shape and Topology Optimization using MATLAB***. -->
 
 ---
 
