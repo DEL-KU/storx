@@ -1,0 +1,18 @@
+Brep format
+brep: 2-D geometry Structure with vertices and segments
+brep.vertices = (2,N) matrix
+includes end points, centers of arcs and circles, and a single point on a circle
+
+brep.segments = (4,M) matrix
+Each column denotes a boundary segment with 4 values
+The columns are as follows
+A. For line segments
+[1 startVertex endVertex 0 ]';
+
+B. For partial arcs
+[2 startVertex endVertex centerVertex]';
+centerVertex is +ve if clockwise and -negative if ccw
+
+C: Connector lines (between outer and inner loops)
+[-1 startVertex endVertex 0 ]';
+

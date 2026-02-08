@@ -1,0 +1,73 @@
+# Build folders #
+###################
+bld/
+blds/
+build/
+build-*
+builds/
+
+# Compiled source #
+###################
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Packages #
+############
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+#*.zip
+
+# MATLAB files #
+###############
+*.asv
+
+# LaTeX files #
+###############
+*.aux
+*.bbl
+*.bak
+*.ent
+*.blg
+*.log
+*.out
+*.nlo
+*.sav
+*.spl
+*.synctex
+*.synctex(busy)
+*.toc
+
+# Logs and databases #
+######################
+*.log
+*.sql
+*.sqlite
+
+# CMake extra files #
+######################
+*.user
+*.idea
+
+# OS generated files #
+######################
+*/.DS_Store
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Results files #
+###############
+result/
