@@ -1,0 +1,11 @@
+name: MATLAB2025
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run tests
+        run: matlab -batch "cd('${{ github.workspace }}'); run('runMeFirst'); runtests('tests');"
