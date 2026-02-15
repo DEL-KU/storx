@@ -47,7 +47,7 @@ classdef  physicalDensity < mfgConstraints
                 eta = 0.5;
             end
              if (nargin < 4)
-                betaMax = 8;
+                betaMax = 4;
             end
             % constructor based on superclass
             obj = obj@mfgConstraints(solver);
@@ -55,11 +55,14 @@ classdef  physicalDensity < mfgConstraints
             obj.m_eta = eta;
             obj.m_numIter = 0;
             obj.m_betaMax = betaMax;
-
-            disp('=====================')
-            disp('WARNING: Use physical density projection filter with MMA or GCMMA optimizers!');
-            disp('=====================')
         end
+
+        function obj = setParameters(obj,beta,eta,betaMax)
+            % Reset the parameters for a new optimization run
+            obj.m_beta = beta;
+            obj.m_eta = eta;
+            obj.m_betaMax = betaMax;
+        end 
 
         function [filteredDesign] = filterDesign(obj, design)
             % filter the design variables

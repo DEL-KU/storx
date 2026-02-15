@@ -67,6 +67,31 @@ classdef (Abstract) density2d < topopt2d
             obj.m_x = obj.m_solver.m_existingElems*obj.m_targetVolFrac;
             obj.m_solver = obj.m_solver.setDesign(obj.m_x);
             
+
+            for consId = 1 : obj.m_numMfgConstraints
+                if (isa(obj.m_mfgConstraints{consId},'physicalDensity'))
+                    if (strcmp(obj.m_update,'OC') == 1)
+                        fprintf('\033[1m');
+                        fprintf('=====================\n');
+                        fprintf('WARNING: The physical density projection filter requires MMA or GCMMA optimizers!\n');
+                        fprintf('WARNING: Changing the optimizer to MMA and maximum projection parameter set to 4!\n');
+                        fprintf('=====================\n');
+                        fprintf('\033[0m');
+                        obj.m_update = 'MMA';
+                        obj.m_mfgConstraints{consId} = obj.m_mfgConstraints{consId}.setParameters(1,0.5,4);
+                    elseif (strcmp(obj.m_update,'MMA') == 1)
+                        fprintf('\033[1m');
+                        disp('=====================')
+                        disp('WARNING: Setting the maximum projection parameter set to 4!');
+                        disp('=====================')
+                        fprintf('\033[0m');
+                       obj.m_mfgConstraints{consId} = obj.m_mfgConstraints{consId}.setParameters(1,0.5,4);
+                    end
+                
+                end
+            end
+
+
             if (strcmp(obj.m_update,'OC') == 1)
                 obj.m_ocOptimizer = ocOptimizer(0,1e9,0.2,0.001,1,obj.m_solver.m_numExistingElems*obj.m_targetVolFrac);
                 obj.m_changeTarget = 0.02;
