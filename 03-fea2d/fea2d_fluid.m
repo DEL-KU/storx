@@ -446,12 +446,12 @@ classdef fea2d_fluid < fea2d
             end
         end
         %% PLOTTING
-        function obj = plotVelocity(obj,method)
+        function obj = plotVelocity(obj,shadingType)
             % plot grid mesh, sets outside value to NaN, so they are
             % ignored in the plot
             plt = PlotId;
             cm = ColorMaps;
-            if nargin < 2, method = 'SurfInterp'; end
+            if nargin == 1, shadingType = 'interp'; end
             for scenarioId = 1:obj.m_numScenarios
                 % Set up figure and initialize plot
                 figure(plt.velocity + scenarioId); clf(gcf,'reset');
@@ -494,22 +494,16 @@ classdef fea2d_fluid < fea2d
                 xlim(obj.m_boundingBox(1, :));
                 ylim(obj.m_boundingBox(2, :));
 
-                if (strcmp(method,'VoxelModel') == 1)
-                    grid on;
-                elseif (strcmp(method,'SurfInterp') == 1)
-                    hold on; grid off; shading interp;
-                else
-                    disp(['Method ' method 'for plotting is not implemented!']);
-                end
+                shading(shadingType);
             end
         end
 
-        function obj = plotPressure(obj,method)
+        function obj = plotPressure(obj,shadingType)
             % plot grid mesh, sets outside value to NaN, so they are
             % ignored in the plot
             plt = PlotId;
             cm = ColorMaps;
-            if nargin < 2, method = 'SurfInterp'; end
+            if nargin == 1, shadingType = 'interp'; end
             for scenarioId = 1:obj.m_numScenarios
                 X = reshape(obj.m_nodeCoords(1,:),[obj.m_ny+1,obj.m_nx+1]);
                 Y = reshape(obj.m_nodeCoords(2,:),[obj.m_ny+1,obj.m_nx+1]);
@@ -521,13 +515,7 @@ classdef fea2d_fluid < fea2d
                 pbaspect(obj.m_boxSizes);axis on;
                 xlim(obj.m_boundingBox(1,:));
                 ylim(obj.m_boundingBox(2,:));
-                if (strcmp(method,'VoxelModel') == 1)
-                    grid on;
-                elseif (strcmp(method,'SurfInterp') == 1)
-                    grid off; shading interp;
-                else
-                    disp(['Method ' method 'for plotting is not implemented!']);
-                end
+                shading(shadingType);
             end
         end
 

@@ -368,5 +368,29 @@ classdef gridMesher <  brep2d
             end
         end
 
+        function plotWireMesh(obj,figId)
+
+            X = reshape(obj.m_nodeCoords(1,:), [obj.m_ny+1, obj.m_nx+1]);
+            Y = reshape(obj.m_nodeCoords(2,:), [obj.m_ny+1, obj.m_nx+1]);
+
+            % Optionally mask lines outside the domain using node mask
+            N = obj.m_existingNodes;
+            N(N==0) = NaN;               % NaN breaks lines in plot
+            N = reshape(N, [obj.m_ny+1, obj.m_nx+1]);
+
+            figure(figId);
+
+            hold on
+            % horizontal lines
+            for i = 1:size(X,1)
+                plot(X(i,:).*N(i,:), Y(i,:).*N(i,:), 'b-');
+            end
+            % vertical lines
+            for j = 1:size(X,2)
+                plot(X(:,j).*N(:,j), Y(:,j).*N(:,j), 'b-');
+            end
+            hold off
+        end
+
     end
 end

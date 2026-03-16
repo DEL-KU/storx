@@ -356,10 +356,10 @@ classdef fea2d_thermal < fea2d
             end
             
         end
-        function obj = plotTemperature(obj,method)
+        function obj = plotTemperature(obj,shadingType)
             plt = PlotId;
             cm = ColorMaps;
-            if (nargin==1), method = 'SurfInterp'; end
+            if nargin == 1, shadingType = 'interp'; end
             % plot grid mesh, sets outside value to NaN, so they are ignored in the plot
             X = reshape(obj.m_nodeCoords(1,:),[obj.m_ny+1,obj.m_nx+1]);
             Y = reshape(obj.m_nodeCoords(2,:),[obj.m_ny+1,obj.m_nx+1]);
@@ -372,14 +372,7 @@ classdef fea2d_thermal < fea2d
                 xlim(obj.m_boundingBox(1,:));
                 ylim(obj.m_boundingBox(2,:));
                 set(gcf, 'Name', strjoin({'Temperature',num2str(scenarioId)},' ') );
-
-                if (strcmp(method,'VoxelModel') == 1)
-                    grid on;
-                elseif (strcmp(method,'SurfInterp') == 1)
-                    grid off; shading interp;
-                else
-                    disp(['Method ' method 'for plotting is not implemented!']);
-                end
+                shading(shadingType);
             end
         end
         function obj = printThermalResults(obj)

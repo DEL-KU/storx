@@ -3,13 +3,14 @@ warning('off','all')
 
 %% Solvers
 feaClass = @fea2d_elasticity;
-topoptClass = @density2d_elasticity;
+topoptClass = @modifiedHJ2d_elasticity;
 
 %% General Parameters
+uniformGrid = 1; % needed for the Hamilton-Jacobi solver
 vectorize = true;
-exportImages = false;
-exportGIF = false;
-exportSTL = false;
+exportImages = true;
+exportGif = true;
+exportSTL = true;
 
 %% File Path
 p = mfilename("fullpath");
@@ -19,46 +20,46 @@ disp("==================================");
 disp(['Running ',example_name])
 
 %% Optimizer Parameters
-interpolation = 'simp'; 
-update = 'OC';
-maxNumIters = 300;
-penaltyStruct = struct('min',3,'max',3,'inc',0.0);
+interpolation = 'none';
+maxNumIters = 600;
+penaltyStruct = struct('min',1,'max',1,'inc',0);
 
 %% Problem Definition
-brep = 'CantileverBeam.brep'; % geometry
-numElements = 3200; % mesh
-material.E = 100e9; material.nu = 0.3; material.rho = 1000; % material
+brep = 'GripperComplex.brep'; % geometry
+numElements = 10000; % mesh
+material.E = 2e9; material.nu = 0.35; material.rho = 1300; % material
+force = 10; % N
 numScenarios = 1;
 %% Construct FEA Solver
 solver = feaClass(brep,numElements,material,vectorize,numScenarios, ...
-    interpolation,penaltyStruct); % call superclass
+    interpolation,penaltyStruct,uniformGrid); % call superclass
 
-solver = solver.fixEdge(5);
-solver = solver.applyYForceOnEdge(2,-1e5);
+solver = solver.fixEdge([5,6,11,12]);
+solver = solver.applyXForceOnEdge(18,force);
 
 solver = solver.preProcess(); % FEA pre-processing
 
 %% Objective and Constraints
-objective = densityComplianceElasticity(solver);
+objective = modifiedHJComplianceElasticity(solver);
 
-volumeFraction = 0.5;
+volumeFraction = 0.65;
 constraints  = {volume(solver, volumeFraction)};
 
 % manufacturing constraints
-rmin = 1.5;
 mfgConstraints = {
-    minimumFeatureSize_dist(solver, rmin)
+    minimumFeatureSize_conv(solver)
+    retain_levelset(solver,[5,6,11,12,18])
     }; 
 %% Construct Optimizer
+topWeight = 10;
 topopt = topoptClass(solver, ...
     objective,constraints,mfgConstraints, ...
-    update, ...
-    maxNumIters,exportGIF);
-
+    topWeight, ...
+    maxNumIters,exportGif);
 %% Make Directory
-if exportImages || exportSTL || exportGIF
-    folder = [path '/../result/example' '-' example_name '/']; %#ok
-    name = [update '-' 'numElem' num2str(numElements) '-' 'vf' num2str(volumeFraction)];
+if exportImages
+    folder = [path '/result/example' '-' example_name '/']; %#ok
+    name = ['numElem' num2str(numElements) '-' 'vf' num2str(volumeFraction)];
     folder = [folder name '/'];
     mkdir(folder)
     cd(folder)
@@ -76,19 +77,19 @@ topopt.m_solver.plotDeformation();
 topopt.m_solver.plotVonMisesStress();
 topopt.m_solver.plotPrincipalStress();
 
-%% Export STL
-if exportSTL
-    thickness = 0.1;
-    topopt.exportSTL(example_name, thickness);
-end
-
 %% Save Individual Figures
 if exportImages
     saveAll(folder);%#ok
 end
 
+%% Export STL
+if exportSTL
+    thickness = 10;
+    topopt.exportSTL(example_name, thickness);
+end
+
 %% Plot Combined Figures
-ex_title = strjoin({example_name,'Combined '},' ');
+ex_title = strjoin({'Level-set TO for Elasticity ','Example',example_name},' ');
 combineFigures(ex_title);
 if exportImages
     saveAll(folder);%#ok

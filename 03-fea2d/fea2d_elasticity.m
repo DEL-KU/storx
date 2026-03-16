@@ -451,11 +451,11 @@ classdef fea2d_elasticity < fea2d
                 pbaspect(obj.m_boxSizes);axis on;axis tight;
             end
         end
-        function obj = plotDeformation(obj,method)
+        function obj = plotDeformation(obj,shadingType)
             % plot grid mesh, sets outside value to NaN, so they are ignored in the plot
             plt = PlotId;
             cm = ColorMaps;
-            if nargin == 1, method = 'SurfInterp'; end
+            if nargin == 1, shadingType = 'interp'; end
             scale = 0.05*obj.m_modelScale/max(obj.m_def(:));
             for scenarioId = 1:obj.m_numScenarios
                 X = reshape(obj.m_nodeCoords(1,:),[obj.m_ny+1,obj.m_nx+1]);
@@ -472,22 +472,19 @@ classdef fea2d_elasticity < fea2d
                 pdegplot(obj.m_pdeGeom);hold on
                 surf(X,Y,F); colormap(cm.deformation); view(2); colorbar;
                 pbaspect(obj.m_boxSizes);axis off;
+                shading(shadingType);
 
-                if (strcmp(method,'VoxelModel') == 1)
-                    grid on;
-                elseif (strcmp(method,'SurfInterp') == 1)
-                    grid off; shading interp;
-                else
-                    disp(['Method ' method 'for plotting is not implemented!']);
+                if (strcmp(shadingType,'faceted') == 1)
+                    obj.plotWireMesh(plt.deformation+scenarioId);
                 end
             end
         end
-        function obj = plotVonMisesStress(obj,method)
+        function obj = plotVonMisesStress(obj,shadingType)
             % plot grid mesh, sets outside value to NaN, so they are
             % ignored in the plot
             plt = PlotId;
             cm = ColorMaps;
-            if nargin == 1, method = 'SurfInterp'; end
+            if nargin == 1, shadingType = 'interp'; end
             for scenarioId = 1:obj.m_numScenarios
                 X = reshape(obj.m_nodeCoords(1,:),[obj.m_ny+1,obj.m_nx+1]);
                 Y = reshape(obj.m_nodeCoords(2,:),[obj.m_ny+1,obj.m_nx+1]);
@@ -506,18 +503,11 @@ classdef fea2d_elasticity < fea2d
                 F(obj.m_solidNodes==0) = NaN;
                 figure(plt.von_mises+scenarioId);
                 set(gcf, 'Name', strjoin({'von Mises Stress ',num2str(scenarioId)},' ') );
-                surf(X,Y,F); colormap(cm.von_mises); view(2); hold on
+                surf(X,Y,F); colormap(cm.von_mises); view(2);colorbar;
                 pbaspect(obj.m_boxSizes);axis off;
                 xlim(obj.m_boundingBox(1,:));
                 ylim(obj.m_boundingBox(2,:));
-                colorbar;
-                if (strcmp(method,'VoxelModel') == 1)
-                    grid on;
-                elseif (strcmp(method,'SurfInterp') == 1)
-                    grid off; shading interp;
-                else
-                    disp(['Method ' method 'for plotting is not implemented!']);
-                end
+                shading(shadingType);
             end
         end
         function obj = plotPrincipalStress(obj,method)
@@ -527,6 +517,7 @@ classdef fea2d_elasticity < fea2d
             if nargin == 1, method = 'StreamLine'; end
             for scenarioId = 1:obj.m_numScenarios
                 figure(plt.principal_stress+scenarioId);
+                pdegplot(obj.m_pdeGeom);hold on
                 set(gcf, 'Name', strjoin({'Principal Stress',num2str(scenarioId)},' ') );
                 if (strcmp(method,'StreamLine') == 1)
                     X = reshape(obj.m_elemCoords(1,:),[obj.m_ny,obj.m_nx]);
