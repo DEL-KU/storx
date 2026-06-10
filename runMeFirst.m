@@ -25,7 +25,7 @@
 addpath(genpath(cd))
 format compact;close all; clear; clc
 disp('STORX: Shape and Topology Optimization for Research and Experimentation');
-disp('Version 2026.03');
+disp('Version 2026.06');
 disp('Copyright: Amir M. Mirzendehdel (amirzend@ku.edu) and Krishnan Suresh (ksuresh@wisc.edu)');
 thisDir = cd;
 %% Latex
