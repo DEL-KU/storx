@@ -36,16 +36,9 @@ solverHandle = @createProblem;
 terminationTolerance = 1e-6;
 finiteDifferenceStepSize = 1e-6;
 
-% Optimization method:
-%  - RS: Random Search
-%  - FD: Finite Difference
-%  - MS: Multi-Start
-%  - GS: Global Search
-method = "GS"; 
-
-parOpt = parameterOpt2d(brepHandle,solverHandle,params0, ...
+parOpt = parameterOpt2d_MS(brepHandle,solverHandle,params0, ...
     objective,constraints, ...
-    terminationTolerance,finiteDifferenceStepSize,method,exportGIF);
+    terminationTolerance,finiteDifferenceStepSize,exportGIF);
 
 %% Optimize
 parOpt = parOpt.optimize();
@@ -68,9 +61,11 @@ cd(path)
 
 %% Create Problem
 function fem = createProblem(brep)
-numElements = 1000; % mesh
+vectorize = true;
+numElements = 500; % mesh
 material.E = 100e9; material.nu = 0.3; material.rho = 1; % material
-fem = triFEA2d_elasticity(brep,numElements,material);
+numScenarios = 1;
+fem = fea2d_elasticity(brep,numElements,material,vectorize,numScenarios);
 fem = fem.fixEdge([2,10]);
 fem = fem.applyYForceOnEdge(6,-1e5);
 end

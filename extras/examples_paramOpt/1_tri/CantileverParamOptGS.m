@@ -33,21 +33,19 @@ constraints.type = 'ineq'; % constraint type: 'eq' or 'ineq'
 %% Construct Optimizer
 brepHandle = @createGeom;
 solverHandle = @createProblem;
+terminationTolerance = 1e-6;
+finiteDifferenceStepSize = 1e-6;
 
-% Optimization method:
-%  - RS: Random Search
-%  - FD: Finite Difference
-%  - MS: Multi-Start
-%  - GS: Global Search
-method = "RS";
-
-parOpt = parameterOpt2d(brepHandle,solverHandle,params0, ...
+parOpt = parameterOpt2d_GS(brepHandle,solverHandle,params0, ...
     objective,constraints, ...
-    [],[],method,exportGIF);
+    terminationTolerance,finiteDifferenceStepSize,exportGIF);
 
 %% Optimize
 parOpt = parOpt.optimize();
-
+%% Output
+parOpt.m_solverInitial.plotGeometry(1,0, 'Initial Geometry');
+parOpt.m_solverFinal.plotDeformation();
+parOpt.m_solverFinal.plotVonMisesStress();
 %% Save
 if exportImages 
     saveAll(folder);%#ok
@@ -63,11 +61,9 @@ cd(path)
 
 %% Create Problem
 function fem = createProblem(brep)
-vectorize = true;
-numElements = 500; % mesh
+numElements = 1000; % mesh
 material.E = 100e9; material.nu = 0.3; material.rho = 1; % material
-numScenarios = 1;
-fem = fea2d_elasticity(brep,numElements,material,vectorize,numScenarios);
+fem = triFEA2d_elasticity(brep,numElements,material);
 fem = fem.fixEdge([2,8]);
 fem = fem.applyYForceOnEdge(5,-1e5);
 end

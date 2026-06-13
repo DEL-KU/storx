@@ -5,12 +5,11 @@ warning('off','all')
 exportImages = false;
 exportGIF = false;
 
-%% File Path
-p = mfilename("fullpath"); 
-[path,example_name,~] = fileparts(p);
-
 %% Export
 if exportImages
+    %% File Path
+    p = mfilename("fullpath"); %#ok
+    [path,example_name,~] = fileparts(p);
     % Make directory
     folder = [path '/result/example' '-' example_name '/']; %#ok
     mkdir(folder)
@@ -36,31 +35,27 @@ solverHandle = @createProblem;
 terminationTolerance = 1e-6;
 finiteDifferenceStepSize = 1e-6;
 
-% Optimization method:
-%  - RS: Random Search
-%  - FD: Finite Difference
-%  - MS: Multi-Start
-%  - GS: Global Search
-method = "GS"; 
-
-parOpt = parameterOpt2d(brepHandle,solverHandle,params0, ...
+parOpt = parameterOpt2d_MS(brepHandle,solverHandle,params0, ...
     objective,constraints, ...
-    terminationTolerance,finiteDifferenceStepSize,method,exportGIF);
+    terminationTolerance,finiteDifferenceStepSize,exportGIF);
 
 %% Optimize
 parOpt = parOpt.optimize();
-
+%% Output
+parOpt.m_solverInitial.plotGeometry(1,0, 'Initial Geometry');
+parOpt.m_solverFinal.plotDeformation();
+parOpt.m_solverFinal.plotVonMisesStress();
 %% Save
-if exportImages 
-    saveAll(folder);%#ok
- end
+if exportImages
+    saveAll(folder); %#ok
+end
 
 %% Plot Combined Figures
 ex_title = strjoin({'Parametric Shape Opt. ','Example',example_name},' ');
 combineFigures(ex_title);
-if exportImages 
-    saveAll(folder);%#ok
- end
+if exportImages
+    saveAll(folder); %#ok
+end
 cd(path)
 
 %% Create Problem
@@ -84,13 +79,13 @@ hl = 0.2;
 a = params(1); % corner cutouts
 b = params(2); % left edge cutout
 geom.vertices = [b 0;
-    0 -hl; 
+    0 -hl;
     0 -H/2;
     L-a -H/2;
-    L -h/2; 
-    L h/2; 
-    L-a H/2; 
-    0 H/2; 
+    L -h/2;
+    L h/2;
+    L-a H/2;
+    0 H/2;
     0 hl ]';
 geom.segments = [1 1 2 0; 1 2 3 0;1 3 4 0;1 4 5 0;1 5 6 0;1 6 7 0;1 7 8 0;1 8 9 0;1 9 1 0]';
 end

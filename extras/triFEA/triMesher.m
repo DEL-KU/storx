@@ -112,6 +112,22 @@ classdef triMesher < brep2d
             obj.m_mesh.p = p; % assumes mesh topology does not change
         end
 
+        function obj = snapNodesToBRep(obj, tol)
+            % Snaps boundary nodes onto the nearest point on the B-rep
+            % while leaving connectivity (t, e) unchanged.
+            % tol: only snap nodes whose distance to the B-rep is less than
+            %      tol (default: inf, i.e. snap all boundary nodes).
+            if nargin < 2
+                tol = inf;
+            end
+            bndryNodes = obj.m_boundaryNodes;
+            pts = obj.m_mesh.p(:, bndryNodes);
+            [dMin, closestPts] = obj.distOfPointsToBrep(pts);
+            toSnap = dMin < tol;
+            obj.m_mesh.p(1, bndryNodes(toSnap)) = closestPts(1, toSnap);
+            obj.m_mesh.p(2, bndryNodes(toSnap)) = closestPts(2, toSnap);
+        end
+
         function obj = findEdges(obj)
             % given the points and triangles, find the edges on the
             % boundary
