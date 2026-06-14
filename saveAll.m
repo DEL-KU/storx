@@ -25,7 +25,7 @@ if nargin < 1
     FolderName = [pwd '/'];
 end
 if nargin < 2
-    save_pdf = false;
+    save_pdf = true;
     save_png = true;
     save_eps = true;
 end

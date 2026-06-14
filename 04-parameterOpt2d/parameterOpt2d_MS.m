@@ -78,7 +78,7 @@ classdef parameterOpt2d_MS < parameterOpt2d
             obj = obj.finalizeResults(xMin, flag, funcCount);
 
             if ~obj.m_testMode
-                obj = obj.plotParetoSpace();
+                obj = obj.plotSampleSpace();
             end
         end
 

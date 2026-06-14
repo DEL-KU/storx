@@ -2,7 +2,7 @@ clc;clear;  close all;format compact; format long
 warning('off','all')
 
 %% General Parameters
-exportImages = false;
+exportImages = true;
 exportGIF = false;
 
 %% File Path
@@ -15,8 +15,12 @@ if exportImages
     folder = [path '/result/example' '-' example_name '/']; %#ok
     mkdir(folder)
     cd(folder)
-    delete 'log.txt'
-    diary 'log.txt'
+    diary off
+    logFile = fullfile(folder, 'log.txt');
+    if exist(logFile, 'file')
+        delete(logFile)
+    end
+    diary(logFile)
 end
 
 disp("==================================");
@@ -52,11 +56,16 @@ if exportImages
  end
 
 %% Plot Combined Figures
-ex_title = strjoin({'Parametric Shape Opt. ','Example',example_name},' ');
-combineFigures(ex_title);
-if exportImages 
-    saveAll(folder);%#ok
- end
+% ex_title = strjoin({'Parametric Shape Opt. ','Example',example_name},' ');
+% combineFigures(ex_title);
+% if exportImages
+%     saveAll(folder);%#ok
+%  end
+% cd(path)
+
+if exportImages
+    diary off
+end
 cd(path)
 
 %% Create Problem

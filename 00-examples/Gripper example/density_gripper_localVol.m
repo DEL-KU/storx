@@ -72,8 +72,12 @@ if exportImages
     folder = [folder name '/'];
     mkdir(folder)
     cd(folder)
-    delete 'log.txt'
-    diary 'log.txt'
+    diary off
+    logFile = fullfile(folder, 'log.txt');
+    if exist(logFile, 'file')
+        delete(logFile)
+    end
+    diary(logFile)
 end
 
 %% Optimize
@@ -104,3 +108,7 @@ end
 %     saveAll(folder);%#ok
 % end
 % cd(path)
+if exportImages
+    diary off
+end
+cd(path)

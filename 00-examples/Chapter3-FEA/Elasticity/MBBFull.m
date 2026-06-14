@@ -32,8 +32,12 @@ if exportImages
     folder = [path '/../result/example' '-' example_name '/']; %#ok
     mkdir(folder)
     cd(folder)
-    delete 'log.txt'
-    diary 'log.txt'
+    diary off
+    logFile = fullfile(folder, 'log.txt');
+    if exist(logFile, 'file')
+        delete(logFile)
+    end
+    diary(logFile)
 end
 
 %% Solve
@@ -61,4 +65,8 @@ combineFigures(ex_title);
 if exportImages 
     saveAll(folder);%#ok
  end
+if exportImages
+    diary off
+end
+
 cd(path)

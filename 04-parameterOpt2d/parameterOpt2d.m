@@ -285,7 +285,7 @@ classdef (Abstract) parameterOpt2d < handle
             area   = fem.getArea();
 
             if strcmp(obj.m_constraints.type, 'ineq')
-                cineq = area / obj.m_targetArea - 1.0
+                cineq = area / obj.m_targetArea - 1.0;
                 ceq   = [];
             else
                 cineq = [];
@@ -429,70 +429,185 @@ classdef (Abstract) parameterOpt2d < handle
             hold off;
         end
 
-        function obj = plotParetoSpace(obj)
+        function obj = plotSampleSpace(obj)
             plt = PlotId;
 
             useArea      = isfield(obj.m_constraints, 'area');
             usePerimeter = isfield(obj.m_constraints, 'perimeter');
-            if ~useArea && ~usePerimeter
-                warning('No constraint on area or perimeter found!');
-            end
 
-            solutions  = obj.m_feasibleExploredSolutions;
-            nSolutions = numel(solutions);
-            if nSolutions == 0
-                warning('No solutions recorded in m_feasibleExploredSolutions!');
+            params = obj.m_results.history.x;
+            fVals  = obj.m_results.history.f(:);
+            nSamples = min(size(params, 1), numel(fVals));
+            if nSamples == 0
+                warning('No samples recorded in optimization history!');
                 return;
             end
 
-            xVals = zeros(nSolutions, 1);
-            yVals = zeros(nSolutions, 1);
+            params = params(1:nSamples, :);
+            fVals  = fVals(1:nSamples);
+            sampleIds = (1:nSamples)';
+            xVals = sampleIds;
+            xLabel = 'Sample number';
+            targetLabel = '';
+            targetValue = [];
+            hasConstraintAxis = useArea || usePerimeter;
 
-            for i = 1:nSolutions
-                xCandidate    = solutions(i).X;
-                fCandidate    = solutions(i).Fval;
-                paramCandidate = xCandidate .* obj.m_param0.value;
-
-                femCandidate = obj.createSolver(paramCandidate);
-                femCandidate = femCandidate.preProcess();
-                femCandidate = femCandidate.solve();
-                femCandidate = femCandidate.postProcess();
-
+            if hasConstraintAxis
+                xVals = zeros(nSamples, 1);
                 if useArea
-                    xVals(i) = femCandidate.getArea();
+                    xLabel = 'Area, $A$';
+                    targetLabel = '$A_{\mathrm{target}}$';
+                    targetValue = obj.m_targetArea;
                 elseif usePerimeter
-                    xVals(i) = femCandidate.getPerimeter();
-                else
-                    xVals(i) = NaN;
+                    xLabel = 'Perimeter, $P$';
+                    targetLabel = '$P_{\mathrm{target}}$';
+                    targetValue = obj.m_targetPerimeter;
                 end
-                yVals(i) = fCandidate * obj.m_results.initialCompliance;
+
+                for i = 1:nSamples
+                    xVals(i) = obj.getParamMetricForPlot(params(i, :), useArea);
+                end
             end
 
-            if useArea
-                xOpt = obj.m_results.finalArea;
-            elseif usePerimeter
-                xOpt = obj.m_results.finalPerimeter;
+            finiteSamples = isfinite(xVals) & isfinite(fVals);
+            if hasConstraintAxis
+                tol = max(obj.m_terminationTolerance, 1e-6) * max(1, abs(targetValue));
+                if isfield(obj.m_constraints, 'type') && strcmp(obj.m_constraints.type, 'eq')
+                    feasibleSamples = abs(xVals - targetValue) <= tol;
+                else
+                    feasibleSamples = xVals <= targetValue + tol;
+                end
             else
-                xOpt = NaN;
+                feasibleSamples = true(nSamples, 1);
             end
-            yOpt = obj.m_results.finalCompliance;
+            feasibleSamples = feasibleSamples & finiteSamples;
+            infeasibleSamples = finiteSamples & ~feasibleSamples;
 
             figure(plt.pareto_front);
-            set(gcf, 'Name', 'Pareto Space');
+            clf;
+            set(gcf, 'Name', 'SampleSpace');
+            ax = gca;
+            ax.TickLabelInterpreter = 'latex';
             hold on; grid on;
-            scatter(xVals, yVals, 40, 'b', 'filled', 'DisplayName', 'Explored Solutions');
-            scatter(xOpt,  yOpt,  80, 'r', 'filled', 'DisplayName', 'Optimum');
 
-            if useArea
-                xlabel('Area');
-            elseif usePerimeter
-                xlabel('Perimeter');
-            else
-                xlabel('Constraint Value');
+            if any(infeasibleSamples)
+                scatter(xVals(infeasibleSamples), fVals(infeasibleSamples), ...
+                    32, [0.70 0.70 0.70], 'o', 'DisplayName', 'Infeasible samples');
             end
-            ylabel('Objective (Compliance)');
-            legend('Location', 'best');
+            if any(feasibleSamples)
+                scatter(xVals(feasibleSamples), fVals(feasibleSamples), ...
+                    38, sampleIds(feasibleSamples), 'filled', ...
+                    'MarkerEdgeColor', [0.15 0.15 0.15], ...
+                    'DisplayName', 'Feasible samples');
+                cb = colorbar;
+                cb.TickLabelInterpreter = 'latex';
+                cb.Label.Interpreter = 'latex';
+                cb.Label.String = 'Evaluation number';
+            end
+
+            if nnz(feasibleSamples) >= 2
+                feasibleIds = find(feasibleSamples);
+                [~, order] = sort(xVals(feasibleIds));
+                envelopeIds = [];
+                bestSoFar = Inf;
+                for k = 1:numel(order)
+                    id = feasibleIds(order(k));
+                    if fVals(id) < bestSoFar
+                        envelopeIds(end+1) = id; %#ok<AGROW>
+                        bestSoFar = fVals(id);
+                    end
+                end
+                if numel(envelopeIds) >= 2
+                    plot(xVals(envelopeIds), fVals(envelopeIds), '-k', ...
+                        'LineWidth', 1.5, 'DisplayName', 'Sample envelope');
+                end
+            end
+
+            [xInitial, xFinal] = obj.getDesignMetricForPlot(hasConstraintAxis, useArea);
+            scatter(xInitial, obj.m_results.initialCompliance, 90, 's', ...
+                'MarkerFaceColor', [0.00 0.45 0.74], ...
+                'MarkerEdgeColor', 'k', 'DisplayName', 'Initial design');
+            scatter(xFinal, obj.m_results.finalCompliance, 110, 'p', ...
+                'MarkerFaceColor', [0.85 0.10 0.10], ...
+                'MarkerEdgeColor', 'k', 'DisplayName', 'Final design');
+
+            [xSolution, ySolution] = obj.getExploredSolutionMetricsForPlot(hasConstraintAxis, useArea);
+            if ~isempty(xSolution)
+                scatter(xSolution, ySolution, 70, 'd', ...
+                    'MarkerEdgeColor', [0.49 0.18 0.56], ...
+                    'LineWidth', 1.2, 'DisplayName', 'Local solution endpoints');
+            end
+
+            if hasConstraintAxis
+                yLimits = ylim;
+                plot([targetValue targetValue], yLimits, '--', ...
+                    'Color', [0.20 0.20 0.20], 'LineWidth', 1.2, ...
+                    'DisplayName', targetLabel);
+                ylim(yLimits);
+            end
+
+            xlabel(xLabel, 'Interpreter', 'latex');
+            if strcmp(obj.m_objective, 'compliance')
+                ylabel('Compliance, $C$', 'Interpreter', 'latex');
+            else
+                ylabel('Objective, $\varphi$', 'Interpreter', 'latex');
+            end
+            legend('Location', 'best', 'Interpreter', 'latex');
+            axis tight;
             hold off;
+
+            fprintf('Sample space: %d evaluations, %d feasible\n', ...
+                nnz(finiteSamples), nnz(feasibleSamples));
+        end
+
+    end
+
+    methods (Access = protected)
+
+        function [xInitial, xFinal] = getDesignMetricForPlot(obj, hasConstraintAxis, useArea)
+            if hasConstraintAxis
+                if useArea
+                    xInitial = obj.m_results.initialArea;
+                    xFinal   = obj.m_results.finalArea;
+                else
+                    xInitial = obj.m_results.initialPerimeter;
+                    xFinal   = obj.m_results.finalPerimeter;
+                end
+            else
+                xInitial = 1;
+                xFinal   = numel(obj.m_results.history.f);
+            end
+        end
+
+        function [xSolution, ySolution] = getExploredSolutionMetricsForPlot(obj, hasConstraintAxis, useArea)
+            xSolution = [];
+            ySolution = [];
+            if ~hasConstraintAxis || isempty(obj.m_feasibleExploredSolutions)
+                return;
+            end
+
+            solutions = obj.m_feasibleExploredSolutions;
+            for i = 1:numel(solutions)
+                if isempty(solutions(i).X) || isempty(solutions(i).Fval)
+                    continue;
+                end
+
+                paramCandidate = solutions(i).X .* obj.m_param0.value;
+                xCandidate = obj.getParamMetricForPlot(paramCandidate, useArea);
+                yCandidate = solutions(i).Fval * obj.m_results.initialCompliance;
+
+                xSolution(end+1, 1) = xCandidate; %#ok<AGROW>
+                ySolution(end+1, 1) = yCandidate; %#ok<AGROW>
+            end
+        end
+
+        function metricValue = getParamMetricForPlot(obj, params, useArea)
+            brepCandidate = brep2d(obj.m_brepHandle(params));
+            if useArea
+                metricValue = brepCandidate.getArea();
+            else
+                metricValue = brepCandidate.getPerimeter();
+            end
         end
 
     end

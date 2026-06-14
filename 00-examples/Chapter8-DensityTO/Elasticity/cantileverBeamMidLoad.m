@@ -64,8 +64,12 @@ if exportImages || exportSTL || exportGIF
     folder = [folder name '/'];
     mkdir(folder)
     cd(folder)
-    delete 'log.txt'
-    diary 'log.txt'
+    diary off
+    logFile = fullfile(folder, 'log.txt');
+    if exist(logFile, 'file')
+        delete(logFile)
+    end
+    diary(logFile)
 end
 
 %% Optimize
@@ -94,5 +98,9 @@ combineFigures(ex_title);
 if exportImages
     saveAll(folder);%#ok
 end
+if exportImages || exportSTL || exportGIF
+    diary off
+end
+
 cd(path)
 

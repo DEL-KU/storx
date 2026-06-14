@@ -2,7 +2,7 @@ clc;clear;  close all;format compact; format long
 warning('off','all')
 
 %% General Parameters
-exportImages = false;
+exportImages = true;
 exportGIF = false;
 
 %% File Path
@@ -15,8 +15,12 @@ if exportImages
     folder = [path '/result/example' '-' example_name '/']; %#ok
     mkdir(folder)
     cd(folder)
-    delete 'log.txt'
-    diary 'log.txt'
+    diary off
+    logFile = fullfile(folder, 'log.txt');
+    if exist(logFile, 'file')
+        delete(logFile)
+    end
+    diary(logFile)
 end
 
 disp("==================================");
@@ -60,6 +64,11 @@ if exportImages
 %     saveAll(folder);%#ok
 %  end
 % cd(path)
+
+if exportImages
+    diary off
+end
+cd(path)
 
 %% Create Problem
 function fem = createProblem(brep)

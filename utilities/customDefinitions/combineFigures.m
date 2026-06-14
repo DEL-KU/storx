@@ -223,6 +223,8 @@ for i = 1:numFigs
             if ~isempty(legend_labels)
                 legend(legend_fields,legend_labels, ...
                     'Location', hLegend.Location);
+            else
+                copyLegendFromDisplayNames(newAxes, hLegend);
             end
         end
     end
@@ -233,6 +235,40 @@ end
 % Close all original figures after copying them
 close(figs);
 disp('Combining figures successfully completed!');
+end
+
+function copyLegendFromDisplayNames(newAxes, hLegend)
+labels = hLegend.String;
+if ischar(labels)
+    labels = {labels};
+end
+
+legendFields = gobjects(0);
+legendLabels = {};
+for k = 1:numel(labels)
+    label = labels{k};
+    hMatch = findobj(newAxes.Children, '-property', 'DisplayName', ...
+        'DisplayName', label);
+    if isempty(hMatch)
+        continue;
+    end
+
+    legendFields(end+1, 1) = hMatch(1); %#ok
+    legendLabels{end+1} = label; %#ok
+end
+
+if isempty(legendLabels)
+    return;
+end
+
+hNewLegend = legend(newAxes, legendFields, legendLabels, ...
+    'Location', hLegend.Location);
+if isprop(hLegend, 'Interpreter')
+    hNewLegend.Interpreter = hLegend.Interpreter;
+end
+if isprop(hLegend, 'FontSize')
+    hNewLegend.FontSize = hLegend.FontSize;
+end
 end
 
 function plotConvergence(figHandle,newAxes,figName)

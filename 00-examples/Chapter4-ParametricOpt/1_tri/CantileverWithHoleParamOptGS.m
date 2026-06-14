@@ -2,7 +2,7 @@ clc;clear;  close all;format compact; format long
 warning('off','all')
 
 %% General Parameters
-exportImages = false;
+exportImages = true;
 exportGIF = false;
 
 %% File Path
@@ -12,11 +12,15 @@ p = mfilename("fullpath");
 %% Export
 if exportImages
     % Make directory
-    folder = [path '/result/example' '-' example_name '/']; %#ok
+    folder = [fullfile(path, 'result', ['example-' example_name]) filesep];
     mkdir(folder)
+    diary off
+    logFile = fullfile(folder, 'log.txt');
+    if exist(logFile, 'file')
+        delete(logFile)
+    end
     cd(folder)
-    delete 'log.txt'
-    diary 'log.txt'
+    diary(logFile)
 end
 
 disp("==================================");
@@ -48,15 +52,18 @@ parOpt.m_solverFinal.plotDeformation();
 parOpt.m_solverFinal.plotVonMisesStress();
 %% Save
 if exportImages 
-    saveAll(folder);%#ok
- end
+    saveAll(folder);
+end
 
 %% Plot Combined Figures
-ex_title = strjoin({'Parametric Shape Opt. ','Example',example_name},' ');
-combineFigures(ex_title);
-if exportImages 
-    saveAll(folder);%#ok
- end
+% ex_title = strjoin({'Parametric Shape Opt. ','Example',example_name},' ');
+% combineFigures(ex_title);
+% if exportImages
+%     saveAll(folder);%#ok
+%  end
+if exportImages
+    diary off
+end
 cd(path)
 
 %% Create Problem
