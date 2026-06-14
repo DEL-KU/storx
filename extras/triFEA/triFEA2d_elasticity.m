@@ -452,6 +452,7 @@ classdef triFEA2d_elasticity < triMesher
                 % the useful part of the KMatrix
                 KTilde = obj.m_K(obj.m_FreeDOF,obj.m_FreeDOF);
                 fTilde = obj.m_F(obj.m_FreeDOF);
+                normfTilde = norm(fTilde)
                 % now subtract all the dirichlet values from rhs
                 for i = 1:numel(obj.m_FixedDOF)
                     dof = obj.m_FixedDOF(i);

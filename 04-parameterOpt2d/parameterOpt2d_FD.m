@@ -3,8 +3,8 @@
 % Finite-difference parameter optimization (concrete subclass).             %
 % For fea2d_elasticity solvers: uses fmincon with internal FD gradients.   %
 % For triFEA2d_elasticity solvers: uses a semi-analytic gradient computed  %
-% via mesh morphing (snapNodesToBRep) and the adjoint sensitivity           %
-%   C' = f^T u',  K u' = -K' u.                                            %
+% via mesh projection. With constant loads, the compliance derivative is    %
+%   C' = -u^T K' u.                                                        %
 %                                                                           %
 % This Matlab code was written by:                                          %
 % - Amir M. Mirzendehdel, Aerospace Engineering Department, KU              %
@@ -47,9 +47,9 @@ classdef parameterOpt2d_FD < parameterOpt2d
 
         function obj = optimize(obj)
             if isa(obj.m_solverInitial, 'triFEA2d_elasticity')
-                obj.m_totalEvals = 30;
+                obj.m_totalEvals = 100;
             else
-                obj.m_totalEvals = 30 * (1 + obj.m_numParams);
+                obj.m_totalEvals = 100 * (1 + obj.m_numParams);
             end
             obj.openProgressBar('FD: Finite Difference');
             obj.m_feasibleExploredSolutions = struct('X', [], 'Fval', []);
@@ -59,18 +59,30 @@ classdef parameterOpt2d_FD < parameterOpt2d
             x0 = ones(size(LB));
 
             if isa(obj.m_solverInitial, 'triFEA2d_elasticity')
-                % Semi-analytic gradient via mesh morphing
-                opt = optimoptions('fmincon', 'Display', 'iter', ...
-                    'TolX',                     obj.m_terminationTolerance, ...
-                    'TolFun',                   obj.m_terminationTolerance, ...
-                    'ConstraintTolerance',      obj.m_terminationTolerance, ...
-                    'SpecifyObjectiveGradient', true);
+                scenarioId = 1;
+                obj.m_solverInitial = obj.solveProjectedTri(obj.m_param0.value);
+                obj.m_cx0        = obj.m_solverInitial.computeCompliance();
+                obj.m_maxDef0    = obj.m_solverInitial.m_maxDef(scenarioId);
+                obj.m_maxStress0 = obj.m_solverInitial.m_maxStress(scenarioId);
+
+                % Semi-analytic gradient with SQP for small parameter spaces.
+                opt = optimoptions('fmincon', ...
+                'Display', 'iter', ...
+                'Algorithm', 'sqp', ...
+                'StepTolerance',       obj.m_terminationTolerance, ...
+                'FunctionTolerance',   obj.m_terminationTolerance, ...
+                'OptimalityTolerance', obj.m_terminationTolerance, ...
+                'ConstraintTolerance', obj.m_terminationTolerance, ...
+                'SpecifyObjectiveGradient',  true, ...
+                'SpecifyConstraintGradient', false, ...
+                'FiniteDifferenceType',      'central', ...
+                'FiniteDifferenceStepSize',  obj.m_finiteDifferenceStepSize);
 
                 [xMin, ~, flag, output] = fmincon( ...
                     @obj.evaluateObjectiveWithGradient, x0, [], [], [], [], ...
                     LB, UB, @obj.evaluateConstraint, opt);
             else
-                % Direct FD: fmincon approximates the gradient internally
+                % Direct FD: fmincon approximates gradients internally.
                 opt = optimoptions('fmincon', 'Display', 'iter', ...
                     'TolX',                     obj.m_terminationTolerance, ...
                     'TolFun',                   obj.m_terminationTolerance, ...
@@ -91,15 +103,12 @@ classdef parameterOpt2d_FD < parameterOpt2d
         end
 
         function [fx, grad] = evaluateObjectiveWithGradient(obj, x)
-            % Semi-analytic (indirect) FD objective + gradient for triFEA2d_elasticity.
-            % Uses mesh projection via snapNodesToBRep to morph the baseline mesh to
-            % the perturbed geometry, then solves K u' = -K' u for the displacement
-            % sensitivity, giving C' = f^T u'.
+            % Semi-analytic objective gradient for triFEA2d_elasticity.
+            % Mesh projection keeps the connectivity fixed while K' is formed.
 
             params = x .* obj.m_param0.value;
-            da     = obj.m_finiteDifferenceStepSize;
 
-            fem0 = obj.solveQuiet(params);
+            fem0 = obj.solveProjectedTri(params);
             cx   = fem0.computeCompliance();
             fx   = cx / obj.m_cx0;
 
@@ -116,45 +125,102 @@ classdef parameterOpt2d_FD < parameterOpt2d
 
             % Extract baseline FEA quantities
             K0      = fem0.m_K;
-            f0      = fem0.m_F;
             u0      = fem0.m_Sol;
             freeDOF = fem0.m_FreeDOF;
-            K0_free = K0(freeDOF, freeDOF);
-            nDOF    = length(u0);
+            u0_free = u0(freeDOF);
 
             p0_backup    = fem0.m_mesh.p;
             brep0_backup = fem0.m_brep;
 
             grad = zeros(size(x));
             for i = 1:obj.m_numParams
-                da_phys        = da * obj.m_param0.value(i);
-                params_pert    = params;
-                params_pert(i) = params(i) + da_phys;
-                brep_pert      = obj.m_brepHandle(params_pert);
+                [h, direction] = obj.boundSafePhysicalStep(params, i);
+                if h == 0
+                    grad(i) = 0;
+                    continue;
+                end
 
-                fem0.m_brep = brep_pert;
-                fem0 = fem0.snapNodesToBRep();
-                fem0 = fem0.assembleK();
-                K_pert = fem0.m_K;
+                params_step = params;
+                params_step(i) = params(i) + direction * h;
+                K_step = obj.projectedStiffness(fem0, params_step, p0_backup, brep0_backup);
 
-                Kprime = (K_pert - K0) / da_phys;
+                if direction > 0
+                    Kprime = (K_step - K0) / h;
+                else
+                    Kprime = (K0 - K_step) / h;
+                end
 
-                rhs          = -Kprime(freeDOF, :) * u0;
-                u_prime_free = K0_free \ rhs;
-
-                u_prime          = zeros(nDOF, 1);
-                u_prime(freeDOF) = u_prime_free;
-
-                C_prime = f0' * u_prime;
+                C_prime = -u0_free' * Kprime(freeDOF, freeDOF) * u0_free;
                 grad(i) = C_prime * obj.m_param0.value(i) / obj.m_cx0;
-
-                fem0.m_mesh.p = p0_backup;
-                fem0.m_brep   = brep0_backup;
             end
 
             fem0.m_K = K0;
-            fem0.m_F = f0;
+            fem0.m_mesh.p = p0_backup;
+            fem0.m_brep   = brep0_backup;
+        end
+
+        function [h, direction] = boundSafePhysicalStep(obj, params, paramId)
+            h = obj.m_finiteDifferenceStepSize * abs(obj.m_param0.value(paramId));
+            if h <= 0
+                h = sqrt(eps) * max(1, abs(params(paramId)));
+            end
+
+            forwardRoom  = obj.m_param0.ub(paramId) - params(paramId);
+            backwardRoom = params(paramId) - obj.m_param0.lb(paramId);
+
+            if forwardRoom >= h
+                direction = 1;
+            elseif backwardRoom >= h
+                direction = -1;
+            elseif forwardRoom > 0
+                h = forwardRoom;
+                direction = 1;
+            elseif backwardRoom > 0
+                h = backwardRoom;
+                direction = -1;
+            else
+                h = 0;
+                direction = 0;
+            end
+        end
+
+        function K = projectedStiffness(obj, fem, params, p0, brep0)
+            fem.m_mesh.p = p0;
+            fem.m_brep   = obj.m_brepHandle(params);
+            fem          = obj.projectMeshToBRep(fem, p0);
+            fem          = fem.assembleK();
+            K            = fem.m_K;
+            fem.m_mesh.p = p0;
+            fem.m_brep   = brep0;
+        end
+
+        function fem = solveProjectedTri(obj, params)
+            fem = obj.createSolver(params);
+            fem = obj.projectMeshToBRep(fem, fem.m_mesh.p);
+            fem = fem.assembleK();
+            fem = fem.assembleBC();
+            fem = fem.solve();
+            fem = fem.postProcess();
+        end
+
+        function fem = projectMeshToBRep(~, fem, p0)
+            bndryNodes = unique(fem.m_mesh.e(1:fem.m_nodesPerEdge, :));
+            bndryPts   = p0(:, bndryNodes);
+            [~, projectedPts] = fem.distOfPointsToBrep(bndryPts);
+
+            bndryDisp = projectedPts - bndryPts;
+            p = p0;
+            if numel(bndryNodes) >= 3
+                Fx = scatteredInterpolant(bndryPts(1,:)', bndryPts(2,:)', ...
+                    bndryDisp(1,:)', 'natural', 'nearest');
+                Fy = scatteredInterpolant(bndryPts(1,:)', bndryPts(2,:)', ...
+                    bndryDisp(2,:)', 'natural', 'nearest');
+                p = p0 + [Fx(p0(1,:)', p0(2,:)')'; Fy(p0(1,:)', p0(2,:)')'];
+            end
+            p(:, bndryNodes) = projectedPts;
+            fem.m_mesh.p = p;
         end
 
     end
+
 end

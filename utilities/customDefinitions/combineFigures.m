@@ -25,7 +25,7 @@ disp('Combining figures, this might take a few seconds ...');
 % Get a list of all open figures
 pltId = PlotId;
 figs = findall(0, 'Type', 'figure');
-
+figs = figs(arrayfun(@(x) isscalar(x.Number), figs));
 % Get figure numbers
 figNumbers = arrayfun(@(x) x.Number, figs);
 

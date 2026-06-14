@@ -23,23 +23,27 @@ disp("==================================");
 disp(['Running ',example_name])
 
 %% Problem Definition
-params0.value = [0.1 0.15 1.2 0.1];
+params0.value = [0.2 0.15 1.2 0.1];
 params0.lb = [0.05 0.05 1 0.05];
 params0.ub = [0.4 0.4 1.5 0.2];
 
 objective = 'compliance'; % objective
-constraints.area = 1.8; % constraint value
+constraints.area = 1.80; % constraint value
 constraints.type = 'ineq'; % constraint type: 'eq' or 'ineq'
 %% Construct Optimizer
 brepHandle = @createGeom;
 solverHandle = @createProblem;
+terminationTolerance = 1e-6;
+finiteDifferenceStepSize = 1e-6;
 
-parOpt = parameterOpt2d_RS(brepHandle,solverHandle,params0, ...
+parOpt = parameterOpt2d_FD(brepHandle,solverHandle,params0, ...
     objective,constraints, ...
-    exportGIF);
+    terminationTolerance,finiteDifferenceStepSize,exportGIF);
 
 %% Optimize
+tic
 parOpt = parOpt.optimize();
+toc
 %% Output
 parOpt.m_solverInitial.plotGeometry(1,0, 'Initial Geometry');
 parOpt.m_solverFinal.plotDeformation();
@@ -50,12 +54,12 @@ if exportImages
  end
 
 %% Plot Combined Figures
-ex_title = strjoin({'Parametric Shape Opt. ','Example',example_name},' ');
-combineFigures(ex_title);
-if exportImages 
-    saveAll(folder);%#ok
- end
-cd(path)
+% ex_title = strjoin({'Parametric Shape Opt. ','Example',example_name},' ');
+% combineFigures(ex_title);
+% if exportImages 
+%     saveAll(folder);%#ok
+%  end
+% cd(path)
 
 %% Create Problem
 function fem = createProblem(brep)

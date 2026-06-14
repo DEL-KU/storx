@@ -23,7 +23,7 @@ disp("==================================");
 disp(['Running ',example_name])
 
 %% Problem Definition
-params0.value = [0.1 0.15 1.2 0.1];
+params0.value = [0.2 0.15 1.2 0.1];
 params0.lb = [0.05 0.05 1 0.05];
 params0.ub = [0.4 0.4 1.5 0.2];
 
@@ -36,7 +36,7 @@ solverHandle = @createProblem;
 terminationTolerance = 1e-6;
 finiteDifferenceStepSize = 1e-6;
 
-parOpt = parameterOpt2d_GS(brepHandle,solverHandle,params0, ...
+parOpt = parameterOpt2d_MS(brepHandle,solverHandle,params0, ...
     objective,constraints, ...
     terminationTolerance,finiteDifferenceStepSize,exportGIF);
 

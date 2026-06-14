@@ -285,7 +285,7 @@ classdef (Abstract) parameterOpt2d < handle
             area   = fem.getArea();
 
             if strcmp(obj.m_constraints.type, 'ineq')
-                cineq = area / obj.m_targetArea - 1.0;
+                cineq = area / obj.m_targetArea - 1.0
                 ceq   = [];
             else
                 cineq = [];
