@@ -6,7 +6,7 @@ feaClass = @fea2d_elasticity;
 
 %% General Parameters
 vectorize = true;
-exportImages = true;
+exportImages = false;
 
 %% File Path
 p = mfilename("fullpath");

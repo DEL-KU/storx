@@ -1,7 +1,7 @@
 clc;clear;  close all;format compact; format long
 %% General Parameters
 vectorize = true;
-exportImages = true;
+exportImages = false;
 exportGIF = false;
 exportSTL = false;
 

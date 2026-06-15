@@ -2,7 +2,7 @@ clc;clear;  close all;format compact; format long
 warning('off','all')
 
 %% General Parameters
-exportImages = true;
+exportImages = false;
 exportGif = false;
 
 %% File Path

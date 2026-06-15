@@ -7,9 +7,9 @@ topoptClass = @density2d_elasticity;
 
 %% General Parameters
 vectorize = true;
-exportImages = true;
+exportImages = false;
 exportGif = false;
-exportSTL = true;
+exportSTL = false;
 
 %% File Path
 p = mfilename("fullpath");

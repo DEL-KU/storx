@@ -8,9 +8,9 @@ topoptClass = @standardHJ2d_elasticity;
 %% General Parameters
 uniformGrid = 1; % needed for the Hamilton-Jacobi solver
 vectorize = true;
-exportImages = true;
+exportImages = false;
 exportGif = true;
-exportSTL = true;
+exportSTL = false;
 
 %% File Path
 p = mfilename("fullpath");
