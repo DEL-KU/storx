@@ -74,7 +74,7 @@ classdef standardHJ2d_thermal < standardHJ2d
             % evaluate constraints
             obj.m_gx = 0; % only volume constraint is implemented
             for g = 1 : obj.m_numConstraints
-                if (isa(obj.m_constraints(),'volume'))
+                if (isa(obj.m_constraints{g},'volume'))
                     [obj.m_constraints{g}, gx] = obj.m_constraints{g}.evaluate();
                     obj.m_gx = gx*obj.m_constraints{g}.m_upperBound;
                     break;
@@ -95,7 +95,7 @@ classdef standardHJ2d_thermal < standardHJ2d
             % evaluate constraints
             obj.m_dgdx = zeros(size(obj.m_x));
             for g = 1 : obj.m_numConstraints
-                if (isa(obj.m_constraints(),'volume'))
+                if (isa(obj.m_constraints{g},'volume'))
                     [obj.m_constraints{g}, dgdx] = obj.m_constraints{g}.gradient();
                     dgdx = dgdx*obj.m_constraints{g}.m_upperBound;
                     obj.m_dgdx = dgdx;
