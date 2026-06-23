@@ -110,7 +110,7 @@ See `00-examples/Chapter6-LevelsetShapeOpt/*` onward for examples on how to crea
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/amirzend/Introduction2TOusingMATLAB.git
+   https://github.com/DEL-KU/storx.git
 2. Open MATLAB and navigate to the desired directory.
 3. Run `runMeFirst.m` file to initialize.
 3. Run one of the example scripts.
