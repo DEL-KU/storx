@@ -13,7 +13,7 @@
 This repository contains the core functionalities for shape optimization (SO) and topology optimization (TO) methods implemented in **MATLAB** using an **object-oriented programming (OOP)** approach.
 It is intended to be used as the accompanying code for the:
 
-1) Amir M. Mirzendehdel and Krishnan Suresh, **STORX: an Open-Source Object-Oriented Framework for Shape and Topology Optimization in MATLAB**, 2026 
+1) Mirzendehdel, Amir M., and Krishnan Suresh. "STORX: An Open-Source Object-Oriented Framework for Shape and Topology Optimization in MATLAB." arXiv preprint arXiv:2606.17291 (2026).
 
 ---
 
@@ -128,6 +128,20 @@ This software was designed for educational use:
 
 Although teaching is the primary focus, the implementation is practical enough for small- to medium-scale optimization problems.
 
+---
+
+## Citation
+
+If you use STORX in your research, please consider citing it.
+
+```bibtex
+@article{mirzendehdel2026storx,
+  title={STORX: An Open-Source Object-Oriented Framework for Shape and Topology Optimization in MATLAB},
+  author={Mirzendehdel, Amir M and Suresh, Krishnan},
+  journal={arXiv preprint arXiv:2606.17291},
+  year={2026}
+}
+```
 ---
 
 ## License
