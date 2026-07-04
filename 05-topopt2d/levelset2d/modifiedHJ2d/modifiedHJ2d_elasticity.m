@@ -69,7 +69,7 @@ classdef modifiedHJ2d_elasticity < standardHJ2d
 
         %% UPDATE DESIGN
         function obj = update(obj)
-            ve = min(obj.m_solver.m_ve,1e-3);
+            ve = 1 / obj.m_solver.m_numExistingElems;
             % Update Lagrange multipliers for augmented Lagrangian
             obj = obj.updateLagrangeMultipliers();
 

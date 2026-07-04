@@ -186,7 +186,7 @@ classdef standardHJ2d < topopt2d
         end
 
         function obj = update(obj)
-            ve = min(obj.m_solver.m_ve,1e-3);
+            ve = 1 / obj.m_solver.m_numExistingElems;
             % update Lagrange multipliers for augmented Lagrangian
             obj = obj.updateLagrangeMultipliers();
 
