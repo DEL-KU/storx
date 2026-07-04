@@ -19,10 +19,7 @@ disp("==================================");
 disp(['Running ',example_name])
 
 %% Optimizer Parameters
-interpolation = 'simp';
-update = 'OC';
 maxNumIters = 300;
-penaltyStruct = struct('min',3,'max',3,'inc',0.0);
 
 %% Problem Definition
 brep = 'GripperComplex.brep'; % geometry
@@ -31,17 +28,13 @@ material.E = 2e9; material.nu = 0.35; material.rho = 1300; % material
 force = 10; % N
 numScenarios = 1;
 %% Construct FEA Solver
-solver = feaClass(brep,numElements,material,vectorize,numScenarios, ...
-    interpolation,penaltyStruct); % call superclass
+solver = feaClass(brep,numElements,material,vectorize,numScenarios); % call superclass
 
 solver = solver.fixEdge([5,6,11,12]);
 solver = solver.applyXForceOnEdge(18,force);
 
 solver = solver.preProcess(); % FEA pre-processing
 
-solver.plotGeometryWithLabels();
-solver.plotMesh();
-saveAll()
 %% Objective and Constraints
 objective = topologicalSensitivityComplianceElasticity(solver);
 
@@ -64,7 +57,7 @@ topopt = topoptClass(solver, ...
 %% Make Directory
 if exportImages
     folder = [path '/result/example' '-' example_name '/']; %#ok
-    name = [update '-' 'numElem' num2str(numElements) '-' 'vf' num2str(volumeFraction)];
+    name = ['numElem' num2str(numElements) '-' 'vf' num2str(volumeFraction)];
     folder = [folder name '/'];
     mkdir(folder)
     cd(folder)
@@ -85,7 +78,7 @@ topopt.plotIsoSurface('Contour');
 topopt.m_solver.plotDeformation();
 topopt.m_solver.plotVonMisesStress();
 topopt.m_solver.plotPrincipalStress();
-
+topopt.plotConvergence();
 %% Export STL
 if exportSTL
     thickness = 10;

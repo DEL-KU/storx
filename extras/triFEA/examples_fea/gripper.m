@@ -1,7 +1,7 @@
 clear; close all; format compact; format long
 elasticityClass = @triFEA2d_elasticity;
 %% General parameters
-exportImages = true;
+exportImages = false;
 
 %% File path
 p = mfilename("fullpath");
