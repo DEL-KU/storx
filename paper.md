@@ -48,9 +48,17 @@ STORX and its chapter-organized examples were used as the primary computational 
 
 The framework's modular architecture enabled rapid incorporation of new formulations: for example, following an invited guest lecture introducing local volume fraction constraints [@wu2017], students were able to formulate and deploy this constraint within STORX as part of a homework assignment. Students also used STORX as the computational basis for independent research-oriented final projects spanning antenna shape optimization, fluid-structure interaction for wing design, and topology optimization of auxetic metamaterials, extending the framework with their own physics models, optimization formulations, and example problems.
 
+# Use of Generative AI
+
+ChatGPT 5.5 and Claude generative artificial intelligence tools were used to improve the clarity and readability of portions of the manuscript, refactor the code, and create documentation and tests. All technical content, results, and interpretations were developed and verified by the authors.
+
 # Acknowledgements
 
 A.M. gratefully acknowledges the Aerospace Department at the University of Kansas for supporting this work.
 A.M. also thanks the students of the graduate-level course AE700, Shape and Topology Optimization (Fall 2025), for their feedback during the development of STORX, and Dr. Jun Wu, Dr. Julian Norato, Dr. Faez Ahmed, Dr. Aaditya Chandrasekhar, and Dr. Krishnan Suresh for their insightful guest lectures, which enriched the course and contributed to the framework's further development.
+
+# Use of Generative AI
+
+ChatGPT (5.4, 5.5) and Claude (Opus 4.8, Fable 5) generative artificial intelligence tools were used to improve the clarity and readability of portions of the manuscript, refactor the code, and create documentation and tests. All technical content, results, and interpretations were developed and verified by the authors.
 
 # References
