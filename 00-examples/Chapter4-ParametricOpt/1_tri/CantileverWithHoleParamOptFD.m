@@ -57,13 +57,13 @@ if exportImages
     saveAll(folder);%#ok
  end
 
-%% Plot Combined Figures
-% ex_title = strjoin({'Parametric Shape Opt. ','Example',example_name},' ');
-% combineFigures(ex_title);
-% if exportImages 
-%     saveAll(folder);%#ok
-%  end
-% cd(path)
+% Plot Combined Figures
+ex_title = strjoin({'Parametric Shape Opt. ','Example',example_name},' ');
+combineFigures(ex_title);
+if exportImages 
+    saveAll(folder);%#ok
+ end
+cd(path)
 
 if exportImages
     diary off
