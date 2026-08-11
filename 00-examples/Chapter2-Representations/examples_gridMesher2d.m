@@ -27,6 +27,7 @@ arguments
     options.uniformGrid (1,1) logical = false
 end
 
+configureGraphics();
 close all; format compact; format long
 
 mesherClass = @gridMesher;

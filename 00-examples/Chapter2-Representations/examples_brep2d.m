@@ -25,6 +25,7 @@ arguments
     options.example (1,1) double {mustBeInteger, mustBeMember(options.example, 1:3)} = 1
 end
 
+configureGraphics();
 close all; format compact; format long
 
 brepClass = @brep2d;

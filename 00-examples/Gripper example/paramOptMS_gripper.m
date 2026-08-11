@@ -20,8 +20,9 @@ arguments
     options.force (1,1) double = 10
     options.numScenarios (1,1) double {mustBeInteger,mustBePositive} = 1
 end
+configureGraphics();
 
-clc; close all;format compact; format long
+close all;format compact; format long
 warning('off','all')
 
 %% General Parameters

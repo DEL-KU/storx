@@ -7,6 +7,7 @@ arguments
     options.material (1,1) struct = struct('E',100e9,'nu',0.3,'rho',1000)
 end
 
+configureGraphics();
 close all; format compact; format long
 elasticityClass = @fea2d_elasticity;
 %% General parameters

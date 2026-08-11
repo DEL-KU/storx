@@ -14,6 +14,7 @@ arguments
     options.filterSigma (1,1) double {mustBePositive} = 0.6
     options.stlThickness (1,1) double {mustBePositive} = 0.2
 end
+configureGraphics();
 
 close all; format compact; format long
 %% General Parameters

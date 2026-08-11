@@ -6,6 +6,7 @@ arguments
     options.material (1,1) struct = struct('rho',1,'mu',1)
     options.inletVelocity (1,1) double = 1
 end
+configureGraphics();
 
 close all; format compact; format long
 

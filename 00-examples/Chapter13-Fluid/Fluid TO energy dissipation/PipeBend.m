@@ -16,8 +16,9 @@ arguments
     options.rmin (1,1) double {mustBePositive} = 1.5
     options.stlThickness (1,1) double {mustBePositive} = 0.2
 end
+configureGraphics();
 
-clc;  close all;format compact; format long
+close all;format compact; format long
 warning('off','all')
 
 %% Solvers

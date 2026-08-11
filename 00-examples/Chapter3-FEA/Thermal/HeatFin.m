@@ -10,6 +10,7 @@ arguments
     options.nFins (1,1) double {mustBeInteger,mustBePositive} = 5
 end
 
+configureGraphics();
 close all; format compact; format long
 thermalClass = @fea2d_thermal;
 

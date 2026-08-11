@@ -6,6 +6,7 @@ arguments
     options.material (1,1) struct = struct('k',1)
 end
 
+configureGraphics();
 close all; format compact; format long
 thermalClass = @fea2d_thermal;
 

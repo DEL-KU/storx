@@ -6,6 +6,7 @@ arguments
     options.material (1,1) struct = struct('E',2e11,'nu',0.28,'rho',1)
 end
 
+configureGraphics();
 close all; format compact; format long
 elasticityClass = @fea2d_elasticity;
 
@@ -25,7 +26,7 @@ material = options.material;
 numElements = options.numElements;
 verticalBar.vertices = [0 0; 1 0; 1 10; 0 10]';
 verticalBar.segments = [1 1 2 0 ;1 2 3 0;1 3 4 0;1 4 1 0]';
-fem = fea2d_elasticity(verticalBar,numElements,material,vectorize);
+fem = elasticityClass(verticalBar,numElements,material,vectorize);
 fem = fem.fixYOfEdge(1);
 fem = fem.applyYForceOnEdge(3,100);
 disp('Exact answer for tensile load: delta = 5e-9, sigma = 100')

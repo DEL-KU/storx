@@ -20,7 +20,8 @@ arguments
     options.loadEdgeLength (1,1) double {mustBePositive} = 0.2
 end
 
-clc; close all;format compact; format long
+configureGraphics();
+close all;format compact; format long
 warning('off','all')
 
 %% General Parameters

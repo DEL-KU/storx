@@ -1,6 +1,5 @@
 % Recursive function to search for all .m files in subfolders and process them
 function disableGIFExport()
-clc
 % Start the recursive search in the current folder
 currentScript = mfilename('fullpath');
 [path,~,~] = fileparts(currentScript);

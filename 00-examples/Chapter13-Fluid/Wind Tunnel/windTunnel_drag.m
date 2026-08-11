@@ -21,8 +21,9 @@ arguments
     options.designHeight (1,1) double {mustBePositive} = 0.5
     options.rmin (1,1) double {mustBePositive} = 1.5
 end
+configureGraphics();
 
-clc;  close all;format compact; format long
+close all;format compact; format long
 warning('off','all')
 
 %% Solvers

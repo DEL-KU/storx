@@ -14,8 +14,9 @@ arguments
     options.stlThickness (1,1) double {mustBePositive} = 10
     options.stlMinPoints (1,1) double {mustBeInteger,mustBeNonnegative} = 10
 end
+configureGraphics();
 
-clc; close all;format compact; format long
+close all;format compact; format long
 warning('off','all')
 
 %% Solvers
