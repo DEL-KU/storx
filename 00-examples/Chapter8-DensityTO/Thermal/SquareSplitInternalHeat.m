@@ -79,7 +79,7 @@ topopt = topoptClass(solver, ...
     maxNumIters,exportGIF);
 
 %% Make Directory
-if exportImages || exportSTL || exportGIF
+if exportImages || exportGIF || exportSTL
     folder = [path '/../result/example' '-' example_name '/']; %#ok
     name = [update '-' 'numElem' num2str(numElements) '-' 'vf' num2str(volumeFraction)];
     folder = [folder name '/'];
@@ -116,7 +116,7 @@ combineFigures(ex_title);
 if exportImages
     saveAll(folder);%#ok
 end
-if exportImages || exportSTL || exportGIF
+if exportImages || exportGIF || exportSTL
     diary off
 end
 

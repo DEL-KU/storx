@@ -40,7 +40,7 @@ solver = solver.preProcess(); % FEA pre-processing
 solver = solver.solve();
 solver = solver.postProcess();
 %% Make Directory
-if exportImages
+if exportImages || exportGIF
     % Make directory
     folder = [path '/../result/example' '-' example_name '/']; %#ok
     mkdir(folder)

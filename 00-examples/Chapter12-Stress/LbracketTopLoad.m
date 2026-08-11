@@ -114,11 +114,11 @@ if exportSTL
 end
 
 %% Plot Combined Figures
-% ex_title = strjoin({example_name,'Combined '},' ');
-% combineFigures(ex_title);
-% if exportImages 
-%     saveAll(folder);%#ok
-%  end
+ex_title = strjoin({example_name,'Combined '},' ');
+combineFigures(ex_title);
+if exportImages 
+    saveAll(folder);%#ok
+ end
 if exportImages || exportGIF || exportSTL
     diary off
 end

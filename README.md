@@ -143,7 +143,7 @@ Manufacturing and design constraints (minimum feature size, physical density pro
 
 ## Requirements
 
-- **MATLAB** R2019b or later (the codebase uses `arguments` validation blocks). Developed and tested with MATLAB R2025a.
+- **MATLAB** R2020a or later (the codebase uses `arguments` validation blocks). Developed and tested with MATLAB R2025a.
 - **Optimization Toolbox** (required) — `fmincon` is used throughout the parametric shape optimization (`04-parameterOpt2d/`) and truss (`extras/trussFEA/`) solvers.
 - **Global Optimization Toolbox** (optional) — only needed for the multi-start and global-search examples (`04-parameterOpt2d/parameterOpt2d_MS.m`, `parameterOpt2d_GS.m`), which use `MultiStart` and `GlobalSearch`.
 - **Partial Differential Equation Toolbox** (required) — `01-brep2d/brep2d.m` builds geometry with `createpde`/`geometryFromEdges` and plots with `pdegplot`; `03-fea2d/fea2d_elasticity.m` also calls `pdegplot`.

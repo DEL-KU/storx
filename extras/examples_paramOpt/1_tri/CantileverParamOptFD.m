@@ -10,7 +10,7 @@ p = mfilename("fullpath");
 [path,example_name,~] = fileparts(p);
 
 %% Export
-if exportImages
+if exportImages || exportGIF
     % Make directory
     folder = [path '/result/example' '-' example_name '/']; %#ok
     mkdir(folder)

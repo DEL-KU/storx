@@ -4,7 +4,7 @@ arguments
     options.exportGIF (1,1) logical = false
     options.interpolation (1,:) char = 'simp'
     options.update (1,:) char = 'MMA'
-    options.maxNumIters (1,1) double {mustBeInteger,mustBePositive} = 100
+    options.maxNumIters (1,1) double {mustBeInteger,mustBePositive} = 50
     options.penaltyStruct (1,1) struct = struct('min',3,'max',3,'inc',0)
     options.brep (1,:) char = 'windTunnel.brep'
     options.numElements (1,1) double {mustBeInteger,mustBePositive} = 40000
