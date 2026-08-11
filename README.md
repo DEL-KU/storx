@@ -6,7 +6,49 @@
   <img src="images/logos/logo_text_colored_transparent.png" alt="STORX logo" width="400" />
 </h1>
 
+## Install STORX as a MATLAB Toolbox
 
+> [!IMPORTANT]
+> **Installing STORX as a toolbox is the recommended setup.** Download
+> `STORX.mltbx` from the
+> **[latest STORX version](https://github.com/DEL-KU/storx/releases/latest)**.
+> MATLAB then manages the search path automatically, so no startup script or
+> manual path configuration is required.
+
+### Install the packaged toolbox
+
+1. Open the desired version on the
+   [STORX Versions page](https://github.com/DEL-KU/storx/releases) and download
+   `STORX.mltbx` from its **Assets** section.
+2. Install the downloaded toolbox using any method below:
+
+   - **MATLAB installer (easiest):** In MATLAB's **Files** panel, double-click
+     `STORX.mltbx`, then follow the installation prompt.
+   - **Add-Ons menu:** On the MATLAB **Home** tab, select
+     **Add-Ons > Install from File**, then choose `STORX.mltbx`.
+   - **Command Window:** Set MATLAB's current folder to the download location,
+     then run:
+
+     ```matlab
+     matlab.addons.toolbox.installToolbox("STORX.mltbx");
+     ```
+
+After installation, STORX is available in every MATLAB session.
+
+### Build the toolbox installer from source (optional)
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/DEL-KU/storx.git
+   cd storx
+   ```
+
+2. Open `storx.prj` in MATLAB R2025a or later.
+3. On the **Project** tab, select **Package Toolbox**. In the Compiler Task
+   Manager, open the configured toolbox task named `release`, then click
+   **Package**. MATLAB creates
+   `release/STORX.mltbx`.
 
 ## Overview
 
@@ -143,7 +185,7 @@ Manufacturing and design constraints (minimum feature size, physical density pro
 
 ## Requirements
 
-- **MATLAB** R2020a or later (the codebase uses `arguments` validation blocks). Developed and tested with MATLAB R2025a.
+- **MATLAB** R2020a or later to run the source code (the codebase uses `arguments` validation blocks). The packaged toolbox is currently configured for R2020a–R2025b, and MATLAB R2025a or later is required to build it from `storx.prj`. Developed and tested with MATLAB R2025a.
 - **Optimization Toolbox** (required) — `fmincon` is used throughout the parametric shape optimization (`04-parameterOpt2d/`) and truss (`extras/trussFEA/`) solvers.
 - **Global Optimization Toolbox** (optional) — only needed for the multi-start and global-search examples (`04-parameterOpt2d/parameterOpt2d_MS.m`, `parameterOpt2d_GS.m`), which use `MultiStart` and `GlobalSearch`.
 - **Partial Differential Equation Toolbox** (required) — `01-brep2d/brep2d.m` builds geometry with `createpde`/`geometryFromEdges` and plots with `pdegplot`; `03-fea2d/fea2d_elasticity.m` also calls `pdegplot`.
@@ -154,21 +196,26 @@ Manufacturing and design constraints (minimum feature size, physical density pro
 
 ## Getting Started
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/DEL-KU/storx.git
-   ```
-2. Open MATLAB and navigate to the desired directory.
-3. Run `runMeFirst.m` to initialize STORX.
-4. Call an example function. Every example has default inputs and accepts
-   optional name-value inputs declared in its `arguments` block. For example:
-   ```matlab
-   geom = runExample('Chapter2-Representations/examples_brep2d.m', ...
-       'example', 2);
-   ```
-   Use `runExample` with a relative file path because several chapters
-   intentionally use the same example filename.
-5. Modify existing classes or add new classes as needed.
+After installing the toolbox, call any example function directly. Every example
+has default inputs and accepts optional name-value inputs declared in its
+`arguments` block. For example:
+
+```matlab
+geom = runExample('Chapter2-Representations/examples_brep2d.m', ...
+    'example', 2);
+```
+
+Use `runExample` with a relative file path because several chapters
+intentionally use the same example filename.
+
+For development directly from a cloned repository, you can use STORX without
+building or installing the toolbox. Open MATLAB in the repository root and run:
+
+```matlab
+addpath(genpath(pwd));
+```
+
+This adds the source tree for the current MATLAB session.
 
 ---
 
