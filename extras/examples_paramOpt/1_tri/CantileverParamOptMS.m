@@ -6,7 +6,7 @@ exportImages = false;
 exportGIF = false;
 
 %% Export
-if exportImages
+if exportImages || exportGIF
     %% File Path
     p = mfilename("fullpath"); %#ok
     [path,example_name,~] = fileparts(p);

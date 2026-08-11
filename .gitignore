@@ -71,3 +71,16 @@ Thumbs.db
 # Results files #
 ###############
 result/
+
+# MATLAB generated/build artifacts
+derived/
+Toolbox/
+release/
+*.mltbx
+deploymentLog.html
+
+derived/**/*
+Toolbox/**/*
+release/**/*
+**/*.mltbx
+**/deploymentLog.html

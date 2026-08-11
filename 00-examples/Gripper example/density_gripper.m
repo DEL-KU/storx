@@ -1,4 +1,24 @@
-clc;clear;  close all;format compact; format long
+function topopt = density_gripper(options)
+arguments
+    options.vectorize (1,1) logical = true
+    options.exportImages (1,1) logical = false
+    options.exportGIF (1,1) logical = false
+    options.exportSTL (1,1) logical = false
+    options.interpolation (1,:) char = 'simp'
+    options.update (1,:) char = 'OC'
+    options.maxNumIters (1,1) double {mustBeInteger,mustBePositive} = 300
+    options.penaltyStruct (1,1) struct = struct('min',3,'max',3,'inc',0.0)
+    options.numElements (1,1) double {mustBeInteger,mustBePositive} = 10000
+    options.material (1,1) struct = struct('E',2e9,'nu',0.35,'rho',1300)
+    options.force (1,1) double = 10
+    options.numScenarios (1,1) double {mustBeInteger,mustBePositive} = 1
+    options.volumeFraction (1,1) double {mustBePositive} = 0.65
+    options.filterRadius (1,1) double {mustBePositive} = 1.5
+    options.stlThickness (1,1) double {mustBePositive} = 10
+end
+configureGraphics();
+
+close all;format compact; format long
 warning('off','all')
 
 %% Solvers
@@ -6,10 +26,10 @@ feaClass = @fea2d_elasticity;
 topoptClass = @density2d_elasticity;
 
 %% General Parameters
-vectorize = true;
-exportImages = false;
-exportGif = false;
-exportSTL = false;
+vectorize = options.vectorize;
+exportImages = options.exportImages;
+exportGIF = options.exportGIF;
+exportSTL = options.exportSTL;
 
 %% File Path
 p = mfilename("fullpath");
@@ -19,17 +39,17 @@ disp("==================================");
 disp(['Running ',example_name])
 
 %% Optimizer Parameters
-interpolation = 'simp';
-update = 'OC';
-maxNumIters = 300;
-penaltyStruct = struct('min',3,'max',3,'inc',0.0);
+interpolation = options.interpolation;
+update = options.update;
+maxNumIters = options.maxNumIters;
+penaltyStruct = options.penaltyStruct;
 
 %% Problem Definition
 brep = 'GripperComplex.brep'; % geometry
-numElements = 10000; % mesh
-material.E = 2e9; material.nu = 0.35; material.rho = 1300; % material
-force = 10; % N
-numScenarios = 1;
+numElements = options.numElements; % mesh
+material = options.material;
+force = options.force; % N
+numScenarios = options.numScenarios;
 %% Construct FEA Solver
 solver = feaClass(brep,numElements,material,vectorize,numScenarios, ...
     interpolation,penaltyStruct); % call superclass
@@ -42,11 +62,11 @@ solver = solver.preProcess(); % FEA pre-processing
 %% Objective and Constraints
 objective = densityComplianceElasticity(solver);
 
-volumeFraction = 0.65;
+volumeFraction = options.volumeFraction;
 constraints  = {volume(solver, volumeFraction)};
 
 % manufacturing constraints
-rmin = 1.5;
+rmin = options.filterRadius;
 mfgConstraints = {
     minimumFeatureSize_dist(solver, rmin)
     retain_density(solver,[5,6,11,12])
@@ -55,10 +75,10 @@ mfgConstraints = {
 topopt = topoptClass(solver, ...
     objective,constraints,mfgConstraints, ...
     update, ...
-    maxNumIters,exportGif);
+    maxNumIters,exportGIF);
 
 %% Make Directory
-if exportImages
+if exportImages || exportGIF || exportSTL
     folder = [path '/result/example_noRetain' '-' example_name '/']; %#ok
     name = [update '-' 'numElem' num2str(numElements) '-' 'vf' num2str(volumeFraction)];
     folder = [folder name '/'];
@@ -84,7 +104,7 @@ topopt.m_solver.plotPrincipalStress();
 
 %% Export STL
 if exportSTL
-    thickness = 10;
+    thickness = options.stlThickness;
     topopt.exportSTL(example_name, thickness);
 end
 
@@ -99,8 +119,9 @@ combineFigures(ex_title);
 if exportImages
     saveAll(folder);%#ok
 end
-if exportImages
+if exportImages || exportGIF || exportSTL
     diary off
 end
 
 cd(path)
+end

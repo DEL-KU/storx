@@ -7,7 +7,7 @@ Thank you for your interest in improving STORX. This document explains how to re
 Please open an issue on the [GitHub issue tracker](https://github.com/DEL-KU/storx/issues) and include:
 
 - The MATLAB version and operating system you are using.
-- The script or class involved (for example, `05-topopt2d/topopt2d_density.m`).
+- The function or class involved (for example, `05-topopt2d/topopt2d_density.m`).
 - Steps to reproduce the problem, and the error message or unexpected output.
 
 ## Suggesting educational content
@@ -29,6 +29,7 @@ STORX is organized as a sequence of numbered chapters under `00-examples/`. If y
 
 - Match the object-oriented conventions already used in the repository (abstract base classes, defined public APIs).
 - Keep methods documented with brief comments explaining non-obvious steps, consistent with the existing codebase.
+- Write examples as functions with defaulted, validated inputs in an `arguments` block so they use a local function workspace.
 - Prefer readability over micro-optimization, since STORX is primarily an educational framework.
 
 ## Questions

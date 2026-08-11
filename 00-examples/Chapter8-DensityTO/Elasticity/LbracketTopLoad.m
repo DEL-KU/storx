@@ -1,9 +1,30 @@
-clear; close all; format compact; format long
+function topopt = LbracketTopLoad(options)
+arguments
+    options.vectorize (1,1) logical = true
+    options.exportImages (1,1) logical = false
+    options.exportGIF (1,1) logical = false
+    options.exportSTL (1,1) logical = false
+    options.interpolation (1,:) char = 'simp'
+    options.update (1,:) char = 'OC'
+    options.maxNumIters (1,1) double {mustBeInteger,mustBePositive} = 300
+    options.penaltyStruct (1,1) struct = struct('min',3,'max',3,'inc',0.0)
+    options.numElements (1,1) double {mustBeInteger,mustBePositive} = 3200
+    options.material (1,1) struct = struct('E',100e9,'nu',0.3,'rho',1000)
+    options.numScenarios (1,1) double {mustBeInteger,mustBePositive} = 1
+    options.load (1,1) double = -1e5
+    options.volumeFraction (1,1) double {mustBePositive} = 0.5
+    options.filterRadius (1,1) double {mustBePositive} = 1.5
+    options.stlThickness (1,1) double {mustBePositive} = 0.1
+end
+
+configureGraphics();
+
+close all; format compact; format long
 %% General Parameters
-vectorize = true;
-exportImages = false;
-exportGIF = false;
-exportSTL = false;
+vectorize = options.vectorize;
+exportImages = options.exportImages;
+exportGIF = options.exportGIF;
+exportSTL = options.exportSTL;
 %% Solvers
 feaClass = @fea2d_elasticity;
 topoptClass = @density2d_elasticity;
@@ -16,34 +37,34 @@ disp("==================================");
 disp(['Running ',example_name])
 
 %% Optimizer Parameters
-interpolation = 'simp';
-update = 'OC';
-maxNumIters = 300;
-penaltyStruct = struct('min',3,'max',3,'inc',0.0);
+interpolation = options.interpolation;
+update = options.update;
+maxNumIters = options.maxNumIters;
+penaltyStruct = options.penaltyStruct;
 
 %% Problem definition
 brep = 'LBracketNoFillet.brep'; % geometry
-numElements = 3200; % mesh
-material.E = 100e9; material.nu = 0.3; material.rho = 1000; % material
-numScenarios = 1;
+numElements = options.numElements; % mesh
+material = options.material;
+numScenarios = options.numScenarios;
 
 %% Construct FEA Solver
 solver = feaClass(brep,numElements,material,vectorize,numScenarios, ...
     interpolation,penaltyStruct); % call superclass
 
 solver = solver.fixEdge(6);
-solver = solver.applyYForceOnEdge(3,-1e5);
+solver = solver.applyYForceOnEdge(3,options.load);
 
 solver = solver.preProcess(); % FEA pre-processing
 
 %% Objective and Constraints
 objective = densityComplianceElasticity(solver);
 
-volumeFraction = 0.5;
+volumeFraction = options.volumeFraction;
 constraints  = {volume(solver, volumeFraction)};
 
 % manufacturing constraints
-rmin = 1.5;
+rmin = options.filterRadius;
 mfgConstraints = {
     minimumFeatureSize_dist(solver, rmin)
     }; 
@@ -55,7 +76,7 @@ topopt = topoptClass(solver, ...
     maxNumIters,exportGIF);
 
 %% Make Directory
-if exportImages || exportSTL || exportGIF
+if exportImages || exportGIF || exportSTL
     folder = [path '/../result/example' '-' example_name '/']; %#ok
     name = ['numElem' num2str(numElements) '-' 'vf' num2str(volumeFraction)];
     folder = [folder name '/'];
@@ -85,7 +106,7 @@ if exportImages
 
  %% Export STL
 if exportSTL
-    thickness = 0.1;
+    thickness = options.stlThickness;
     topopt.exportSTL(example_name, thickness);
 end
 
@@ -95,8 +116,9 @@ combineFigures(ex_title);
 if exportImages 
     saveAll(folder);%#ok
  end
-if exportImages || exportSTL || exportGIF
+if exportImages || exportGIF || exportSTL
     diary off
 end
 
 cd(path)
+end

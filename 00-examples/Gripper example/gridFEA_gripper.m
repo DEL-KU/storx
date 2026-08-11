@@ -1,12 +1,23 @@
-clc;clear;  close all;format compact; format long
+function solver = gridFEA_gripper(options)
+arguments
+    options.vectorize (1,1) logical = true
+    options.exportImages (1,1) logical = false
+    options.numElements (1,1) double {mustBeInteger,mustBePositive} = 4000
+    options.material (1,1) struct = struct('E',2e9,'nu',0.35,'rho',1300)
+    options.force (1,1) double = 10
+    options.numScenarios (1,1) double {mustBeInteger,mustBePositive} = 1
+end
+configureGraphics();
+
+close all;format compact; format long
 warning('off','all')
 
 %% Solvers
 feaClass = @fea2d_elasticity;
 
 %% General Parameters
-vectorize = true;
-exportImages = false;
+vectorize = options.vectorize;
+exportImages = options.exportImages;
 
 %% File Path
 p = mfilename("fullpath");
@@ -17,12 +28,12 @@ disp(['Running ',example_name])
 
 %% Problem Definition
 brep = 'GripperComplex.brep'; % geometry
-numElements = 4000; % mesh
-material.E = 2e9; material.nu = 0.35; material.rho = 1300; % material
-force = 10; % N
-numScenarios = 1;
+numElements = options.numElements; % mesh
+material = options.material;
+force = options.force; % N
+numScenarios = options.numScenarios;
 %% Construct FEA Solver
-solver = fea2d_elasticity(brep,numElements,material);
+solver = feaClass(brep,numElements,material,vectorize,numScenarios);
 
 solver = solver.fixEdge([5,6,11,12]);
 solver = solver.applyXForceOnEdge(18,force);
@@ -69,3 +80,4 @@ if exportImages
 end
 
 cd(path)
+end

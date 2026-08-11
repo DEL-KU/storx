@@ -39,7 +39,7 @@ classdef  minimumFeatureSize_gaussian < mfgConstraints
             % constructor based on superclass
             obj = obj@mfgConstraints(solver);
 
-            if (nargin > 2)
+            if (nargin > 1)
                 obj.m_sigma = sigma;
             else
                 obj.m_sigma = 0.6;

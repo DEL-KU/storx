@@ -1,9 +1,19 @@
-clear; close all; format compact; format long
+function fem = MBBSymmetry(options)
+arguments
+    options.vectorize (1,1) logical = true
+    options.exportImages (1,1) logical = false
+    options.brep (1,:) char = 'MBBSymmetry.brep'
+    options.numElements (1,1) double {mustBeInteger,mustBePositive} = 3200
+    options.material (1,1) struct = struct('E',100e9,'nu',0.3,'rho',1000)
+end
+
+configureGraphics();
+close all; format compact; format long
 elasticityClass = @fea2d_elasticity;
 
 %% General parameters
-vectorize = true;
-exportImages = false;
+vectorize = options.vectorize;
+exportImages = options.exportImages;
 
 %% File path
 p = mfilename("fullpath"); 
@@ -13,10 +23,10 @@ disp("==================================");
 disp(['Running ',example_name])
 
 %% Problem definition
-brep = 'MBBSymmetry.brep'; % geometry
-numElements = 3200; % mesh
+brep = options.brep; % geometry
+numElements = options.numElements; % mesh
 
-material.E = 100e9; material.nu = 0.3; material.rho = 1000; % material
+material = options.material; % material
 
 % construct fea solver
 fem = elasticityClass(brep,numElements,material,vectorize); % call superclass
@@ -70,3 +80,4 @@ if exportImages
 end
 
 cd(path);
+end

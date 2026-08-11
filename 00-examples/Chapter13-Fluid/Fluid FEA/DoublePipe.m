@@ -1,8 +1,17 @@
-clear; close all; format compact; format long
+function fem = DoublePipe(options)
+arguments
+    options.exportImages (1,1) logical = false
+    options.brep (1,:) char = 'DoublePipe.brep'
+    options.numElements (1,1) double {mustBeInteger,mustBePositive} = 2000
+    options.material (1,1) struct = struct('rho',1,'mu',1)
+    options.inletVelocity (1,1) double = 1
+end
+configureGraphics();
+
+close all; format compact; format long
 
 %% General parameters
-vectorize = true;
-exportImages = false;
+exportImages = options.exportImages;
 
 %% File path
 p = mfilename("fullpath"); 
@@ -12,14 +21,13 @@ disp("==================================");
 disp(['Running ',example_name])
 
 %% Problem definition
-material.rho = 1;
-material.mu = 1; % viscosity
-numElements = 2000;
+material = options.material;
+numElements = options.numElements;
 
-fem = fea2d_fluid('DoublePipe.brep',numElements,material);
-
+fem = fea2d_fluid(options.brep,numElements,material);
+fem = fem.setupContinuationScheme();
 % inlet
-Uin = 1;
+Uin = options.inletVelocity;
 fem = fem.fixUOfEdge([9,11],Uin);
 fem = fem.fixVOfEdge([9,11],0);
 % outlet
@@ -79,3 +87,4 @@ if exportImages
 end
 
 cd(path)
+end

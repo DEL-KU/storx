@@ -8,4 +8,4 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Run tests
-        run: matlab -batch "cd('${{ github.workspace }}'); run('runMeFirst'); runtests('tests');"
+        run: matlab -batch "cd('${{ github.workspace }}'); addpath(genpath(cd)); runtests('tests');"

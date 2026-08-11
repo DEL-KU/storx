@@ -1,10 +1,19 @@
-clear; close all; format compact; format long
+function fem = verticalBarFlux(options)
+arguments
+    options.vectorize (1,1) logical = true
+    options.exportImages (1,1) logical = false
+    options.numElements (1,1) double {mustBeInteger,mustBePositive} = 1000
+    options.material (1,1) struct = struct('k',1)
+end
+
+configureGraphics();
+close all; format compact; format long
 thermalClass = @fea2d_thermal;
 
 
 %% General parameters
-vectorize = true;
-exportImages = false;
+vectorize = options.vectorize;
+exportImages = options.exportImages;
 
 %% File path
 p = mfilename("fullpath"); 
@@ -14,8 +23,8 @@ disp("==================================");
 disp(['Running ',example_name])
 
 %% Problem definition
-material.k = 1; % thermal conductivity
-numElements = 1000;
+material = options.material; % thermal conductivity
+numElements = options.numElements;
 verticalBar.vertices = [0 0; 1 0; 1 10; 0 10]';
 verticalBar.segments = [1 1 2 0 ;1 2 3 0;1 3 4 0;1 4 1 0]';
 fem = thermalClass(verticalBar,numElements,material,vectorize);
@@ -68,3 +77,4 @@ if exportImages
 end
 
 cd(path)
+end

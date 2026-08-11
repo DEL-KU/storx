@@ -1,10 +1,23 @@
-clear; close all; format compact; format long
+function fem = HeatFin(options)
+arguments
+    options.vectorize (1,1) logical = true
+    options.exportImages (1,1) logical = false
+    options.numElements (1,1) double {mustBeInteger,mustBePositive} = 3200
+    options.material (1,1) struct = struct('k',80)
+    options.length (1,1) double {mustBePositive} = 0.2
+    options.baseHeight (1,1) double {mustBePositive} = 0.1
+    options.finHeight (1,1) double {mustBePositive} = 0.07
+    options.nFins (1,1) double {mustBeInteger,mustBePositive} = 5
+end
+
+configureGraphics();
+close all; format compact; format long
 thermalClass = @fea2d_thermal;
 
 
 %% General parameters
-vectorize = true;
-exportImages = false;
+vectorize = options.vectorize;
+exportImages = options.exportImages;
 
 %% File path
 p = mfilename("fullpath"); 
@@ -14,12 +27,12 @@ disp("==================================");
 disp(['Running ',example_name])
 
 %% Problem definition
-material.k = 80;
-numElements = 3200;
-L = 0.2;
-H = 0.1;
-h = 0.07;
-nFins = 5;
+material = options.material;
+numElements = options.numElements;
+L = options.length;
+H = options.baseHeight;
+h = options.finHeight;
+nFins = options.nFins;
 nVertices = 8 + 4*(nFins-2);
 nEdges = nVertices;
 t = L/(2*nFins-1);
@@ -88,3 +101,4 @@ if exportImages
 end
 
 cd(path)
+end

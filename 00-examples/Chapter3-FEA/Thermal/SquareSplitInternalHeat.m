@@ -1,10 +1,20 @@
-clear; close all; format compact; format long
+function fem = SquareSplitInternalHeat(options)
+arguments
+    options.vectorize (1,1) logical = true
+    options.exportImages (1,1) logical = false
+    options.brep (1,:) char = 'SquareSplit.brep'
+    options.numElements (1,1) double {mustBeInteger,mustBePositive} = 10000
+    options.material (1,1) struct = struct('k',1)
+end
+
+configureGraphics();
+close all; format compact; format long
 thermalClass = @fea2d_thermal;
 
 
 %% General parameters
-vectorize = true;
-exportImages = false;
+vectorize = options.vectorize;
+exportImages = options.exportImages;
 
 %% File path
 p = mfilename("fullpath"); 
@@ -14,9 +24,9 @@ disp("==================================");
 disp(['Running ',example_name])
 
 %% Problem definition
-material.k = 1;
-numElements = 10000;
-fem = thermalClass('SquareSplit.brep',numElements,material,vectorize);
+material = options.material;
+numElements = options.numElements;
+fem = thermalClass(options.brep,numElements,material,vectorize);
 fem = fem.fixEdge(2,0);
 fem = fem.applyInternalHeat(0.01);
         
@@ -64,3 +74,4 @@ if exportImages
 end
 
 cd(path)
+end

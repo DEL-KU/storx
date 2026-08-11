@@ -1,12 +1,11 @@
 % Recursive function to search for all .m files in subfolders and process them
 function enableGIFExport()
-clc
 % Start the recursive search in the current folder
 currentScript = mfilename('fullpath');
 [path,~,~] = fileparts(currentScript);
 disp(path)
 processFolder(path,currentScript);
-disp('GIF export is truned on for all examples.');
+disp('GIF export is turned on by default for all examples.');
 end
 
 function processFolder(folderPath,currentScriptPath)
@@ -35,8 +34,8 @@ for k = 1:length(files)
     % Split into lines
     lines = regexp(fileContents, '\r\n|\n|\r', 'split');
 
-    pattern = '\<exportGIF\>\s*=\s*(?:false|0)\s*;?';  % word-boundary safe in MATLAB
-    replacement = 'exportGIF = true;';
+    pattern = '(\<(?i:exportgif)\>(?:\s*\([^)]*\))?(?:\s+\w+)?(?:\s*\{[^}]*\})?\s*=\s*)(?:false|0)(\s*;?)';
+    replacement = '$1true$2';
 
     changed = false;
     for i = 1:numel(lines)

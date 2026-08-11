@@ -1,12 +1,11 @@
 % Recursive function to search for all .m files in subfolders and process them
 function disableSTLExport()
-clc
 % Start the recursive search in the current folder
 currentScript = mfilename('fullpath');
 [path,~,~] = fileparts(currentScript);
 disp(path)
 processFolder(path,currentScript);
-disp('STL export is truned off for all examples. You can export STLs by setting exportSTL = 1;');
+disp('STL export is turned off by default. Pass ''exportSTL'', true to override it for one example.');
 end
 
 function processFolder(folderPath,currentScriptPath)
@@ -35,8 +34,8 @@ for k = 1:length(files)
     % Split into lines
     lines = regexp(fileContents, '\r\n|\n|\r', 'split');
 
-    pattern = '\<exportSTL\>\s*=\s*(?:true|0)\s*;?';  % word-boundary safe in MATLAB
-    replacement = 'exportSTL = false;';
+    pattern = '(\<(?i:exportstl)\>(?:\s*\([^)]*\))?(?:\s+\w+)?(?:\s*\{[^}]*\})?\s*=\s*)(?:true|1)(\s*;?)';
+    replacement = '$1false$2';
 
     changed = false;
     for i = 1:numel(lines)

@@ -20,34 +20,40 @@
 % the distribution.                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-clc; clear;  close all;format compact; format long
+function mesh = examples_gridMesher2d(options)
+arguments
+    options.example (1,1) double {mustBeInteger, mustBeMember(options.example, 1:3)} = 1
+    options.numElements (1,1) double {mustBeInteger, mustBePositive} = 1000
+    options.uniformGrid (1,1) logical = false
+end
+
+configureGraphics();
+close all; format compact; format long
 
 mesherClass = @gridMesher;
-example = 1;
-switch (example)
+switch (options.example)
     case 1
         %% Beam with Chamfers
-        numElements = 1000;
-        uniformGrid = 0;
-        mesh = mesherClass('BeamWithChamfers.brep',numElements,uniformGrid);
+        mesh = mesherClass('BeamWithChamfers.brep', ...
+            options.numElements, options.uniformGrid);
 
     case 2
         %% Beam with Fillet
         BeamWithFillets.vertices = [0 0;1.7 0;2 0.3;2 0.7;1.7 1;0 1;1.7 0.3;1.7 0.7]';
         BeamWithFillets.segments = [1 1 2 0;2 2 3 -7;1 3 4 0;2 4 5 -8;1 5 6 0;1 6 1 0]';
-        numElements = 1000;
-        uniformGrid = 0;
-        mesh = mesherClass(BeamWithFillets,numElements,uniformGrid);
+        mesh = mesherClass(BeamWithFillets, ...
+            options.numElements, options.uniformGrid);
     case 3
         %% Beam with Fillet
         BeamWithHole.vertices = [0 0;1 0;1 0.3;1 0.7;2 0;2 1;0 1;1 0.5]';
         BeamWithHole.segments = [1 1 2 0; -1 2 3 0; 2 3 4 8; 2 4 3 8; -1 3 2 0; 1 2 5 0; 1 5 6 0; 1 6 7 0; 1 7 1 0]';
-        numElements = 1000;
-        uniformGrid = 0;
-        mesh = mesherClass(BeamWithHole,numElements,uniformGrid);
+        mesh = mesherClass(BeamWithHole, ...
+            options.numElements, options.uniformGrid);
 end
 
 mesh = mesh.generateGrid();
 
 mesh.plotGeometryWithLabels();
 mesh.plotMesh();
+
+end
