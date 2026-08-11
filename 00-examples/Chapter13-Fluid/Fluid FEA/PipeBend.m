@@ -9,7 +9,7 @@ end
 configureGraphics();
 
 close all; format compact; format long
-
+warning('off','all')
 %% General parameters
 exportImages = options.exportImages;
 
