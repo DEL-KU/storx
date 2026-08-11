@@ -25,7 +25,7 @@ material = options.material;
 numElements = options.numElements;
 
 fem = fea2d_fluid(options.brep,numElements,material);
-
+fem = fem.setupContinuationScheme();
 % inlet
 Uin = options.inletVelocity;
 fem = fem.fixUOfEdge(7,Uin);
