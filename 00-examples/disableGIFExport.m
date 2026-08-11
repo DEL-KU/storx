@@ -6,7 +6,7 @@ currentScript = mfilename('fullpath');
 [path,~,~] = fileparts(currentScript);
 disp(path)
 processFolder(path,currentScript);
-disp('GIF export is truned off for all examples. You can export GIFs by setting exportGIF = 1;');
+disp('GIF export is turned off by default. Pass ''exportGIF'', true to override it for one example.');
 end
 
 function processFolder(folderPath,currentScriptPath)
@@ -35,8 +35,8 @@ for k = 1:length(files)
     % Split into lines
     lines = regexp(fileContents, '\r\n|\n|\r', 'split');
 
-    pattern = '\<exportGIF\>\s*=\s*(?:true|0)\s*;?';  % word-boundary safe in MATLAB
-    replacement = 'exportGIF = false;';
+    pattern = '(\<(?i:exportgif)\>(?:\s*\([^)]*\))?(?:\s+\w+)?(?:\s*\{[^}]*\})?\s*=\s*)(?:true|1)(\s*;?)';
+    replacement = '$1false$2';
 
     changed = false;
     for i = 1:numel(lines)

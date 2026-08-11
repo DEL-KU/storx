@@ -1,16 +1,39 @@
-clc;clear;  close all;format compact; format long
+function parOpt = paramOptMS_gripper(options)
+arguments
+    options.exportImages (1,1) logical = false
+    options.exportGIF (1,1) logical = false
+    options.initialParameters (1,6) double = [20,-15,4.0,10,-60,5.0]
+    options.lowerBounds (1,6) double = [10,-10,1.0,5,-40,1.0]
+    options.upperBounds (1,6) double = [25,-25,10.0,10,-55,4.0]
+    options.objective (1,:) char = 'compliance'
+    options.areaLimit (1,1) double {mustBePositive} = 3.1e3
+    options.constraintType (1,:) char = 'ineq'
+    options.terminationTolerance (1,1) double {mustBePositive} = 1e-6
+    options.finiteDifferenceStepSize (1,1) double {mustBePositive} = 1e-6
+    options.method (1,1) string ...
+        {mustBeMember(options.method,["RS","FD","MS","GS"])} = "RS"
+    options.randomSearchSamples (1,1) double {mustBeInteger,mustBePositive} = 10
+    options.randomSearchFunctionCounts (1,1) double {mustBeInteger,mustBePositive} = 100
+    options.vectorize (1,1) logical = true
+    options.numElements (1,1) double {mustBeInteger,mustBePositive} = 10000
+    options.material (1,1) struct = struct('E',2e9,'nu',0.35,'rho',1300)
+    options.force (1,1) double = 10
+    options.numScenarios (1,1) double {mustBeInteger,mustBePositive} = 1
+end
+
+clc; close all;format compact; format long
 warning('off','all')
 
 %% General Parameters
-exportImages = false;
-exportGif = false;
+exportImages = options.exportImages;
+exportGIF = options.exportGIF;
 
 %% File Path
 p = mfilename("fullpath"); 
 [path,example_name,~] = fileparts(p);
 
 %% Export
-if exportImages
+if exportImages || exportGIF
     % Make directory
     folder = [path '/result/example' '-' example_name '/']; %#ok
     mkdir(folder)
@@ -27,32 +50,45 @@ disp("==================================");
 disp(['Running ',example_name])
 
 %% Problem Definition
-params0.value = [20,-15, 4.0,10,-60,5.0];
-params0.lb = [10,  -10,   1.0, 5,  -40,   1.0 ];
-params0.ub = [ 25,  -25,   10.0,10,  -55,  4.0 ];
+params0.value = options.initialParameters;
+params0.lb = options.lowerBounds;
+params0.ub = options.upperBounds;
 
-objective = 'compliance'; % objective
+objective = options.objective; % objective
 
-constraints.area = 3.1e3; % constraint value
-constraints.type = 'ineq'; % constraint type: 'eq' or 'ineq'
+constraints.area = options.areaLimit; % constraint value
+constraints.type = options.constraintType; % constraint type: 'eq' or 'ineq'
 %% Construct Optimizer
 brepHandle = @createGeom;
-solverHandle = @createProblem;
-terminationTolerance = 1e-6;
-finiteDifferenceStepSize = 1e-6;
+solverHandle = @(brep) createProblem(brep,options);
+terminationTolerance = options.terminationTolerance;
+finiteDifferenceStepSize = options.finiteDifferenceStepSize;
 
 % Optimization method:
 %  - RS: Random Search
 %  - FD: Finite Difference
 %  - MS: Multi-Start
 %  - GS: Global Search
-method = "RS";
-
-parOpt = parameterOpt2d(brepHandle,solverHandle,params0, ...
-    objective,constraints, ...
-    terminationTolerance,finiteDifferenceStepSize,method,exportGif);
-
-parOpt = parOpt.setNumberOfRandomSearchSamples(10, 100);
+switch options.method
+    case "RS"
+        parOpt = parameterOpt2d_RS(brepHandle,solverHandle,params0, ...
+            objective,constraints,exportGIF);
+        parOpt = parOpt.setNumberOfRandomSearchSamples( ...
+            options.randomSearchSamples, ...
+            options.randomSearchFunctionCounts);
+    case "FD"
+        parOpt = parameterOpt2d_FD(brepHandle,solverHandle,params0, ...
+            objective,constraints,terminationTolerance, ...
+            finiteDifferenceStepSize,exportGIF);
+    case "MS"
+        parOpt = parameterOpt2d_MS(brepHandle,solverHandle,params0, ...
+            objective,constraints,terminationTolerance, ...
+            finiteDifferenceStepSize,exportGIF);
+    case "GS"
+        parOpt = parameterOpt2d_GS(brepHandle,solverHandle,params0, ...
+            objective,constraints,terminationTolerance, ...
+            finiteDifferenceStepSize,exportGIF);
+end
 %% Optimize
 parOpt = parOpt.optimize();
 
@@ -67,19 +103,20 @@ combineFigures(ex_title);
 if exportImages 
     saveAll(folder);%#ok
  end
-if exportImages
+if exportImages || exportGIF
     diary off
 end
 
 cd(path)
+end
 
 %% Create Problem
-function solver = createProblem(brep)
-vectorize = true;
-numElements = 10000; % mesh
-material.E = 2e9; material.nu = 0.35; material.rho = 1300; % material
-force = 10; % N
-numScenarios = 1;
+function solver = createProblem(brep,options)
+vectorize = options.vectorize;
+numElements = options.numElements; % mesh
+material = options.material;
+force = options.force; % N
+numScenarios = options.numScenarios;
 solver = fea2d_elasticity(brep,numElements,material,vectorize,numScenarios); % call superclass
 
 solver = solver.fixEdge([5,6,11,12]);

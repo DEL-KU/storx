@@ -1,4 +1,23 @@
-clc;clear;  close all;format compact; format long
+function topopt = DoublePipe(options)
+arguments
+    options.exportImages (1,1) logical = false
+    options.exportGIF (1,1) logical = false
+    options.exportSTL (1,1) logical = false
+    options.interpolation (1,:) char = 'simp'
+    options.update (1,:) char = 'MMA'
+    options.maxNumIters (1,1) double {mustBeInteger,mustBePositive} = 10
+    options.penaltyStruct (1,1) struct = struct('min',3,'max',3,'inc',0)
+    options.brep (1,:) char = 'DoublePipe.brep'
+    options.numElements (1,1) double {mustBeInteger,mustBePositive} = 2000
+    options.numScenarios (1,1) double {mustBeInteger,mustBePositive} = 1
+    options.material (1,1) struct = struct('rho',1,'mu',1)
+    options.inletVelocity (1,1) double = 1
+    options.volumeFraction (1,1) double {mustBeGreaterThan(options.volumeFraction,0),mustBeLessThanOrEqual(options.volumeFraction,1)} = 0.3
+    options.rmin (1,1) double {mustBePositive} = 1.5
+    options.stlThickness (1,1) double {mustBePositive} = 0.2
+end
+
+clc;  close all;format compact; format long
 warning('off','all')
 
 %% Solvers
@@ -6,10 +25,9 @@ feaClass = @fea2d_fluid;
 topoptClass = @density2d_fluid;
 
 %% General Parameters
-vectorize = true;
-exportImages = false;
-exportGIF = false;
-exportSTL = false;
+exportImages = options.exportImages;
+exportGIF = options.exportGIF;
+exportSTL = options.exportSTL;
 
 %% File Path
 p = mfilename("fullpath");
@@ -19,24 +37,23 @@ disp("==================================");
 disp(['Running ',example_name])
 
 %% Optimizer Parameters
-interpolation = 'simp';
-update = 'MMA';
-maxNumIters = 10;
-penaltyStruct = struct('min',3,'max',3,'inc',0);
+interpolation = options.interpolation;
+update = options.update;
+maxNumIters = options.maxNumIters;
+penaltyStruct = options.penaltyStruct;
 
 %% Problem Definition
-brep = 'DoublePipe.brep'; % geometry
-numElements = 2000; % mesh
-numScenarios = 1; % # loading scenarios
-material.rho = 1; % density
-material.mu = 1; % viscosity
+brep = options.brep; % geometry
+numElements = options.numElements; % mesh
+numScenarios = options.numScenarios; % # loading scenarios
+material = options.material;
 
 %% Construct FEA Solver
 solver = feaClass(brep,numElements,material, ...
     interpolation,numScenarios,penaltyStruct); % call superclass
 
 % inlet
-Uin = 1;
+Uin = options.inletVelocity;
 solver = solver.fixUOfEdge([9,11],Uin);
 solver = solver.fixVOfEdge([9,11],0);
 % outlet
@@ -55,11 +72,11 @@ solver = solver.preProcess();
 %% Objective and Constraints
 objective = densityEnergyDissipation(solver);
 
-volumeFraction = 0.3;
+volumeFraction = options.volumeFraction;
 constraints  = {volume(solver, volumeFraction)};
 
 % manufacturing constraints
-rmin = 1.5;
+rmin = options.rmin;
 mfgConstraints = {
     minimumFeatureSize_dist(solver, rmin)
     physicalDensity(solver)
@@ -72,7 +89,7 @@ topopt = topoptClass(solver, ...
     maxNumIters,exportGIF);
 
 %% Make Directory
-if exportImages
+if exportImages || exportGIF || exportSTL
     folder = [path '/../result/EnergyDiss/example' '-' example_name '/']; %#ok
     name = [update '-' 'numElem' num2str(numElements) '-' 'vf' num2str(volumeFraction)];
     folder = [folder name '/'];
@@ -101,7 +118,7 @@ end
 
 %% Export STL
 if exportSTL
-    thickness = 0.2;
+    thickness = options.stlThickness;
     topopt.exportSTL(example_name, thickness);
 end
 
@@ -111,8 +128,9 @@ combineFigures(ex_title);
 if exportImages
     saveAll(folder);%#ok
 end
-if exportImages
+if exportImages || exportGIF || exportSTL
     diary off
 end
 
 cd(path)
+end

@@ -156,11 +156,19 @@ Manufacturing and design constraints (minimum feature size, physical density pro
 
 1. Clone the repository:
    ```bash
-   https://github.com/DEL-KU/storx.git
+   git clone https://github.com/DEL-KU/storx.git
+   ```
 2. Open MATLAB and navigate to the desired directory.
-3. Run `runMeFirst.m` file to initialize.
-3. Run one of the example scripts.
-4. Modify existing classes or add new classes as needed.
+3. Run `runMeFirst.m` to initialize STORX.
+4. Call an example function. Every example has default inputs and accepts
+   optional name-value inputs declared in its `arguments` block. For example:
+   ```matlab
+   geom = runExample('Chapter2-Representations/examples_brep2d.m', ...
+       'example', 2);
+   ```
+   Use `runExample` with a relative file path because several chapters
+   intentionally use the same example filename.
+5. Modify existing classes or add new classes as needed.
 
 ---
 

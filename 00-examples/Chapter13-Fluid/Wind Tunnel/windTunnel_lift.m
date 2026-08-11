@@ -1,4 +1,32 @@
-clc;clear;  close all;format compact; format long
+function topopt = windTunnel_lift(options)
+arguments
+    options.exportImages (1,1) logical = false
+    options.exportGIF (1,1) logical = false
+    options.exportSTL (1,1) logical = false
+    options.interpolation (1,:) char = 'simp'
+    options.update (1,:) char = 'MMA'
+    options.maxNumIters (1,1) double {mustBeInteger,mustBePositive} = 100
+    options.penaltyStruct (1,1) struct = struct('min',3,'max',3,'inc',0)
+    options.brep (1,:) char = 'windTunnel.brep'
+    options.numElements (1,1) double {mustBeInteger,mustBePositive} = 40000
+    options.numScenarios (1,1) double {mustBeInteger,mustBePositive} = 1
+    options.reynoldsNumber (1,1) double {mustBePositive} = 10
+    options.referenceVelocity (1,1) double {mustBePositive} = 1
+    options.volumeFraction (1,1) double {mustBeGreaterThan(options.volumeFraction,0),mustBeLessThanOrEqual(options.volumeFraction,1)} = 0.85
+    options.materialDensity (1,1) double {mustBePositive} = 1
+    options.alphaMin (1,1) double {mustBeGreaterThanOrEqual(options.alphaMin,0)} = 0
+    options.alphaScale (1,1) double {mustBePositive} = 1e-5
+    options.qa (1,1) double {mustBePositive} = 10
+    options.dragLimitFactor (1,1) double {mustBePositive} = 1.1
+    options.dragReference (1,1) double {mustBePositive} = 2.4207
+    options.designCenter (1,2) double = [1.35,0.5]
+    options.designWidth (1,1) double {mustBePositive} = 1.5
+    options.designHeight (1,1) double {mustBePositive} = 0.5
+    options.rmin (1,1) double {mustBePositive} = 1.5
+    options.stlThickness (1,1) double {mustBePositive} = 0.2
+end
+
+clc;  close all;format compact; format long
 warning('off','all')
 
 %% Solvers
@@ -6,10 +34,9 @@ feaClass = @fea2d_fluid;
 topoptClass = @density2d_fluid;
 
 %% General Parameters
-vectorize = true;
-exportImages = false;
-exportGIF = false;
-exportSTL = false;
+exportImages = options.exportImages;
+exportGIF = options.exportGIF;
+exportSTL = options.exportSTL;
 
 %% File Path
 p = mfilename("fullpath");
@@ -19,36 +46,36 @@ disp("==================================");
 disp(['Running ',example_name])
 
 %% Optimizer Parameters
-interpolation = 'simp';
-update = 'MMA';
-maxNumIters = 100;
-penaltyStruct = struct('min',3,'max',3,'inc',0);
+interpolation = options.interpolation;
+update = options.update;
+maxNumIters = options.maxNumIters;
+penaltyStruct = options.penaltyStruct;
 
 %% Problem Definition
-brep = 'windTunnel.brep'; % geometry
-numElements = 40000;             % mesh
-numScenarios = 1;               % # loading scenarios
+brep = options.brep; % geometry
+numElements = options.numElements;             % mesh
+numScenarios = options.numScenarios;               % # loading scenarios
 
 % Specify Reynolds number
-Re_in = 10.0;          % desired inlet Reynolds number
-Uref  = 1.0;         % reference/inlet velocity
+Re_in = options.reynoldsNumber;          % desired inlet Reynolds number
+Uref  = options.referenceVelocity;         % reference/inlet velocity
 
 % volume fraction
-volumeFraction = 0.85;
-activeArea = 1.5*0.5;
+volumeFraction = options.volumeFraction;
+activeArea = options.designWidth*options.designHeight;
 Lc = sqrt(volumeFraction*activeArea);
 
 % Non-dimensional material parameters consistent with Re_in
-material.rho = 1.0;
+material.rho = options.materialDensity;
 material.mu  = material.rho * Uref * Lc / Re_in;
 
-alpha_min = 0.;
-alpha_max = material.mu/(1e-5*Lc);
+alpha_min = options.alphaMin;
+alpha_max = material.mu/(options.alphaScale*Lc);
 alpha_0 = alpha_min;
-qa = 10;
+qa = options.qa;
 %% Construct FEA Solver
 solver = feaClass(brep,numElements,material, ...
-    interpolation,numScenarios);
+    interpolation,numScenarios,penaltyStruct);
 
 solver = solver.setAlphaValues(alpha_min, alpha_max,alpha_0,qa);
 
@@ -68,12 +95,12 @@ solver = solver.fixVOfEdge(2,0,0);
 solver = solver.preProcess();
 
 %% evaluate reference drag
-beta = 1.1;
-dragRef = 2.4207; % from Joe Alexandersen's paper
+beta = options.dragLimitFactor;
+dragRef = options.dragReference; % from Joe Alexandersen's paper
 %% Active Design Domain
-center = [1.35,0.5];
-w = 1.5;
-h = 0.5;
+center = options.designCenter;
+w = options.designWidth;
+h = options.designHeight;
 solver = solver.createRectangularDesignDomain(center,w,h);
 %% Objective and Constraints
 objective = densityLift(solver);
@@ -84,7 +111,7 @@ constraints = {
     };
 
 % manufacturing constraints
-rmin = 1.5;
+rmin = options.rmin;
 mfgConstraints = {
     minimumFeatureSize_dist(solver, rmin)
     physicalDensity(solver)
@@ -100,7 +127,7 @@ topopt = topoptClass(solver, ...
 topopt = topopt.set_qa(qa);
 
 %% Make Directory
-if exportImages
+if exportImages || exportGIF || exportSTL
     folder = [path '/../result/lift/example' '-' example_name '/']; %#ok
     name = [update '-' 'numElem' num2str(numElements) '-' 'vf' num2str(volumeFraction)];
     folder = [folder name '/'];
@@ -129,7 +156,7 @@ if exportImages
 
 %% Export STL
 if exportSTL
-    thickness = 0.2;
+    thickness = options.stlThickness;
     topopt.exportSTL(example_name, thickness);
 end
 
@@ -139,8 +166,9 @@ combineFigures(ex_title);
 if exportImages 
     saveAll(folder);%#ok
  end
-if exportImages
+if exportImages || exportGIF || exportSTL
     diary off
 end
 
 cd(path)
+end

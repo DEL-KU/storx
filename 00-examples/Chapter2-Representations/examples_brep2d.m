@@ -20,24 +20,30 @@
 % the distribution.                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-clc; clear;  close all;format compact; format long
+function geom = examples_brep2d(options)
+arguments
+    options.example (1,1) double {mustBeInteger, mustBeMember(options.example, 1:3)} = 1
+end
+
+close all; format compact; format long
 
 brepClass = @brep2d;
-example = 1;
-switch (example)
+switch (options.example)
     case 1
         %% Beam with Chamfers
-        geom = brep2d('BeamWithChamfers.brep');
+        geom = brepClass('BeamWithChamfers.brep');
     case 2
         %% Beam with Fillet
         BeamWithFillets.vertices = [0 0;1.7 0;2 0.3;2 0.7;1.7 1;0 1;1.7 0.3;1.7 0.7]';
         BeamWithFillets.segments = [1 1 2 0;2 2 3 -7;1 3 4 0;2 4 5 -8;1 5 6 0;1 6 1 0]';
-        geom = brep2d(BeamWithFillets);
+        geom = brepClass(BeamWithFillets);
     case 3
         %% Beam with Fillet
         BeamWithHole.vertices = [0 0;1 0;1 0.3;1 0.7;2 0;2 1;0 1;1 0.5]';
         BeamWithHole.segments = [1 1 2 0; -1 2 3 0; 2 3 4 8; 2 4 3 8; -1 3 2 0; 1 2 5 0; 1 5 6 0; 1 6 7 0; 1 7 1 0]';
-        geom = brep2d(BeamWithHole);
+        geom = brepClass(BeamWithHole);
 end
 
 geom.plotGeometryWithLabels();
+
+end

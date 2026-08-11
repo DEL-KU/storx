@@ -1,16 +1,38 @@
-clc;clear;  close all;format compact; format long
+function parOpt = CantileverWithHoleParamOptMS(options)
+arguments
+    options.exportImages (1,1) logical = false
+    options.exportGIF (1,1) logical = false
+    options.params0 (1,1) struct = struct('value',[0.1 0.15 1.2 0.1], ...
+        'lb',[0.05 0.05 1 0.05],'ub',[0.4 0.4 1.5 0.2])
+    options.objective (1,:) char = 'compliance'
+    options.constraints (1,1) struct = struct('area',1.8,'type','ineq')
+    options.terminationTolerance (1,1) double {mustBePositive} = 1e-6
+    options.finiteDifferenceStepSize (1,1) double {mustBePositive} = 1e-6
+    options.vectorize (1,1) logical = true
+    options.numElements (1,1) double {mustBeInteger,mustBePositive} = 1000
+    options.material (1,1) struct = struct('E',100e9,'nu',0.3,'rho',1)
+    options.numScenarios (1,1) double {mustBeInteger,mustBePositive} = 1
+    options.fixedEdges (1,:) double {mustBeInteger,mustBePositive} = [2 15]
+    options.forceEdge (1,1) double {mustBeInteger,mustBePositive} = 11
+    options.force (1,1) double = -1e5
+    options.geometryLength (1,1) double {mustBePositive} = 2.0
+    options.geometryHeight (1,1) double {mustBePositive} = 1
+    options.loadEdgeLength (1,1) double {mustBePositive} = 0.2
+end
+
+clc; close all;format compact; format long
 warning('off','all')
 
 %% General Parameters
-exportImages = false;
-exportGIF = false;
+exportImages = options.exportImages;
+exportGIF = options.exportGIF;
 
 %% File Path
 p = mfilename("fullpath"); 
 [path,example_name,~] = fileparts(p);
 
 %% Export
-if exportImages
+if exportImages || exportGIF
     % Make directory
     folder = [path '/result/example' '-' example_name '/']; %#ok
     mkdir(folder)
@@ -27,18 +49,18 @@ disp("==================================");
 disp(['Running ',example_name])
 
 %% Problem Definition
-params0.value = [0.1 0.15 1.2 0.1];
-params0.lb = [0.05 0.05 1 0.05];
-params0.ub = [0.4 0.4 1.5 0.2];
+params0 = options.params0;
 
-objective = 'compliance'; % objective
-constraints.area = 1.8; % constraint value
-constraints.type = 'ineq'; % constraint type: 'eq' or 'ineq'
+objective = options.objective; % objective
+constraints = options.constraints;
 %% Construct Optimizer
-brepHandle = @createGeom;
-solverHandle = @createProblem;
-terminationTolerance = 1e-6;
-finiteDifferenceStepSize = 1e-6;
+brepHandle = @(params) createGeom(params,options.geometryLength, ...
+    options.geometryHeight,options.loadEdgeLength);
+solverHandle = @(brep) createProblem(brep,options.vectorize, ...
+    options.numElements,options.material,options.numScenarios, ...
+    options.fixedEdges,options.forceEdge,options.force);
+terminationTolerance = options.terminationTolerance;
+finiteDifferenceStepSize = options.finiteDifferenceStepSize;
 
 parOpt = parameterOpt2d_MS(brepHandle,solverHandle,params0, ...
     objective,constraints, ...
@@ -61,31 +83,24 @@ combineFigures(ex_title);
 if exportImages 
     saveAll(folder);%#ok
  end
-if exportImages
+if exportImages || exportGIF
     diary off
 end
 
 cd(path)
+end
 
 %% Create Problem
-function fem = createProblem(brep)
-vectorize = true;
-numElements = 1000; % mesh
-material.E = 100e9; material.nu = 0.3; material.rho = 1; % material
-numScenarios = 1;
+function fem = createProblem(brep,vectorize,numElements,material,numScenarios, ...
+        fixedEdges,forceEdge,force)
 fem = fea2d_elasticity(brep,numElements,material,vectorize,numScenarios);
-fem = fem.fixEdge([2,15]);
-fem = fem.applyYForceOnEdge(11,-1e5);
+fem = fem.fixEdge(fixedEdges);
+fem = fem.applyYForceOnEdge(forceEdge,force);
 fem = fem.preProcess();
 end
 
 %% Create Geometry from Parameters
-function geom = createGeom(params)
-% params
-L = 2.0;%length
-H = 1;%height
-h = 0.2; % length of force edge
-
+function geom = createGeom(params,L,H,h)
 a = params(1); % corner cutouts
 b = params(2); % left edge cutout
 c = params(3);

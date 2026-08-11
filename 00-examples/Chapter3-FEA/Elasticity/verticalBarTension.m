@@ -1,9 +1,17 @@
-clear; close all; format compact; format long
+function fem = verticalBarTension(options)
+arguments
+    options.vectorize (1,1) logical = true
+    options.exportImages (1,1) logical = false
+    options.numElements (1,1) double {mustBeInteger,mustBePositive} = 1000
+    options.material (1,1) struct = struct('E',2e11,'nu',0.28,'rho',1)
+end
+
+close all; format compact; format long
 elasticityClass = @fea2d_elasticity;
 
 %% General parameters
-vectorize = true;
-exportImages = false;
+vectorize = options.vectorize;
+exportImages = options.exportImages;
 
 %% File path
 p = mfilename("fullpath"); 
@@ -13,9 +21,8 @@ disp("==================================");
 disp(['Running ',example_name])
 
 %% Problem definition
-material.E = 2e11;  material.nu = 0.28;
-material.rho = 1;
-numElements = 1000;
+material = options.material;
+numElements = options.numElements;
 verticalBar.vertices = [0 0; 1 0; 1 10; 0 10]';
 verticalBar.segments = [1 1 2 0 ;1 2 3 0;1 3 4 0;1 4 1 0]';
 fem = fea2d_elasticity(verticalBar,numElements,material,vectorize);
@@ -68,3 +75,4 @@ if exportImages
 end
 
 cd(path)
+end

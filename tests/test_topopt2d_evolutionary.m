@@ -31,9 +31,11 @@ classdef test_topopt2d_evolutionary < matlab.unittest.TestCase
             constraints = {volume(solver, volumeFraction)};
 
             % manufacturing constraints
+            filterSigma = 0.75;
             mfgConstraints = {
-                minimumFeatureSize_gaussian(solver)
+                minimumFeatureSize_gaussian(solver,filterSigma)
                 };
+            testCase.verifyEqual(mfgConstraints{1}.m_sigma,filterSigma);
 
             %% Construct Optimizer
             volDecrement = 0.01;
