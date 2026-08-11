@@ -103,7 +103,7 @@ topopt.m_solver.plotVonMisesStress();
 topopt.m_solver.plotPrincipalStress();
 
 %% Save Individual Figures
-if exportImages 
+if exportImages
     saveAll(folder);%#ok
  end
 
@@ -116,7 +116,7 @@ end
 %% Plot Combined Figures
 ex_title = strjoin({example_name,'Combined '},' ');
 combineFigures(ex_title);
-if exportImages 
+if exportImages
     saveAll(folder);%#ok
  end
 if exportImages || exportGIF || exportSTL
