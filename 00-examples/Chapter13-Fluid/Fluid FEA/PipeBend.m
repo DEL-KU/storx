@@ -1,6 +1,7 @@
 function fem = PipeBend(options)
 arguments
     options.exportImages (1,1) logical = false
+    options.combineFigure (1,1) logical = false
     options.brep (1,:) char = 'PipeBend.brep'
     options.numElements (1,1) double {mustBeInteger,mustBePositive} = 2000
     options.material (1,1) struct = struct('rho',1,'mu',1)
@@ -12,7 +13,7 @@ close all; format compact; format long
 warning('off','all')
 %% General parameters
 exportImages = options.exportImages;
-
+combineFigure = options.combineFigure;
 %% File path
 p = mfilename("fullpath");
 [path,example_name,~] = fileparts(p);
@@ -75,12 +76,13 @@ if exportImages
  end
 
 %% Plot Combined Figures
-ex_title = strjoin({'Fluid ','Example',example_name},' ');
-combineFigures(ex_title);
-if exportImages 
-    saveAll(folder);%#ok
- end
-
+if combineFigure
+    ex_title = strjoin({'Fluid ','Example',example_name},' ');
+    combineFigures(ex_title);
+    if exportImages
+        saveAll(folder);%#ok
+    end
+end
 if exportImages
     diary off
 end

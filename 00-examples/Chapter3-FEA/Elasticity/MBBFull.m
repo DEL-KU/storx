@@ -2,6 +2,7 @@ function fem = MBBFull(options)
 arguments
     options.vectorize (1,1) logical = true
     options.exportImages (1,1) logical = false
+    options.combineFigure (1,1) logical = false
     options.brep (1,:) char = 'MBBFull.brep'
     options.numElements (1,1) double {mustBeInteger,mustBePositive} = 6400
     options.material (1,1) struct = struct('E',100e9,'nu',0.3,'rho',1000)
@@ -14,6 +15,7 @@ elasticityClass = @fea2d_elasticity;
 %% General parameters
 vectorize = options.vectorize;
 exportImages = options.exportImages;
+combineFigure = options.combineFigure;
 
 %% File path
 p = mfilename("fullpath"); 
@@ -70,11 +72,13 @@ if exportImages
  end
 
 %% Plot Combined Figures
-ex_title = strjoin({'Elasticity ','Example',example_name},' ');
-combineFigures(ex_title);
-if exportImages 
-    saveAll(folder);%#ok
- end
+if combineFigure
+    ex_title = strjoin({'Elasticity ','Example',example_name},' ');
+    combineFigures(ex_title);
+    if exportImages
+        saveAll(folder);%#ok
+    end
+end
 if exportImages
     diary off
 end

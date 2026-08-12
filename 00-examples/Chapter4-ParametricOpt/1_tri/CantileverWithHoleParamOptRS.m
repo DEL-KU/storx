@@ -1,6 +1,7 @@
 function parOpt = CantileverWithHoleParamOptRS(options)
 arguments
     options.exportImages (1,1) logical = false
+    options.combineFigure (1,1) logical = false
     options.exportGIF (1,1) logical = false
     options.params0 (1,1) struct = struct('value',[0.2 0.15 1.2 0.1], ...
         'lb',[0.05 0.05 1 0.05],'ub',[0.4 0.4 1.5 0.2])
@@ -22,6 +23,7 @@ warning('off','all')
 
 %% General Parameters
 exportImages = options.exportImages;
+combineFigure = options.combineFigure;
 exportGIF = options.exportGIF;
 
 %% File Path
@@ -72,11 +74,13 @@ if exportImages
  end
 
 %% Plot Combined Figures
-ex_title = strjoin({'Parametric Shape Opt. ','Example',example_name},' ');
-combineFigures(ex_title);
-if exportImages
-    saveAll(folder);%#ok
- end
+if combineFigure
+    ex_title = strjoin({'Parametric Shape Opt. ','Example',example_name},' ');
+    combineFigures(ex_title);
+    if exportImages
+        saveAll(folder);%#ok
+    end
+end
 cd(path)
 
 if exportImages || exportGIF

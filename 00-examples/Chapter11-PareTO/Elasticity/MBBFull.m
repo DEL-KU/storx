@@ -2,6 +2,7 @@ function topopt = MBBFull(options)
 arguments
     options.vectorize (1,1) logical = true
     options.exportImages (1,1) logical = false
+    options.combineFigure (1,1) logical = false
     options.exportGIF (1,1) logical = false
     options.exportSTL (1,1) logical = false
     options.brep (1,:) char = 'MBBFull.brep'
@@ -27,6 +28,7 @@ topoptClass = @pareto2d_elasticity;
 %% General Parameters
 vectorize = options.vectorize;
 exportImages = options.exportImages;
+combineFigure = options.combineFigure;
 exportGIF = options.exportGIF;
 exportSTL = options.exportSTL;
 
@@ -110,10 +112,12 @@ if exportSTL
     topopt.exportSTL(example_name, thickness);
 end
 %% Plot Combined Figures
-ex_title = strjoin({'Pareto-tracing Topology Optimization for Elasticity ','Example',example_name},' ');
-combineFigures(ex_title);
-if exportImages
-    saveAll(folder);%#ok
+if combineFigure
+    ex_title = strjoin({'Pareto-tracing Topology Optimization for Elasticity ','Example',example_name},' ');
+    combineFigures(ex_title);
+    if exportImages
+        saveAll(folder);%#ok
+    end
 end
 if exportImages || exportGIF || exportSTL
     diary off

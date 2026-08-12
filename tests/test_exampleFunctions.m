@@ -76,6 +76,145 @@ classdef test_exampleFunctions < matlab.unittest.TestCase
             end
         end
 
+        function combinedFiguresAreOptional(testCase)
+            testFolder = fileparts(mfilename('fullpath'));
+            repositoryRoot = fileparts(testFolder);
+            examplesRoot = fullfile(repositoryRoot, '00-examples');
+            files = dir(fullfile(examplesRoot, '**', '*.m'));
+
+            % Root-level files are utilities; nested files are examples.
+            files = files(~strcmp({files.folder}, examplesRoot));
+            numExportExamples = 0;
+
+            for fileIndex = 1:numel(files)
+                file = files(fileIndex);
+                filePath = fullfile(file.folder, file.name);
+                lines = splitlines(string(fileread(filePath)));
+                codeOnly = regexprep(lines, "%.*$", "");
+                trimmedCode = strtrim(codeOnly);
+
+                exportDeclarations = regexp(cellstr(codeOnly), ...
+                    '^\s*options\.exportImages\>', 'once');
+                if ~any(~cellfun('isempty', exportDeclarations))
+                    continue
+                end
+                numExportExamples = numExportExamples + 1;
+
+                combineDeclarations = find(trimmedCode == ...
+                    "options.combineFigure (1,1) logical = false");
+                testCase.verifyNumElements(combineDeclarations, 1, sprintf( ...
+                    ['%s must declare exactly one logical combineFigure ' ...
+                    'option that defaults to false.'], filePath));
+
+                combineAssignments = find(trimmedCode == ...
+                    "combineFigure = options.combineFigure;");
+                testCase.verifyNumElements(combineAssignments, 1, sprintf( ...
+                    ['%s must assign options.combineFigure to the local ' ...
+                    'combineFigure variable exactly once.'], filePath));
+
+                combineMatches = regexp(cellstr(codeOnly), ...
+                    '\<combineFigures\s*\(', 'once');
+                combineIndices = find(~cellfun('isempty', combineMatches));
+                testCase.verifyNumElements(combineIndices, 1, sprintf( ...
+                    '%s must call combineFigures exactly once.', filePath));
+
+                guardIndices = find(trimmedCode == "if combineFigure");
+                testCase.verifyNumElements(guardIndices, 1, sprintf( ...
+                    ['%s must guard its combined title, figure call, and save ' ...
+                    'with exactly one if combineFigure block.'], filePath));
+                if numel(guardIndices) ~= 1
+                    continue
+                end
+
+                guardIndex = guardIndices(1);
+                guardEndIndex = test_exampleFunctions.findBlockEnd( ...
+                    trimmedCode, guardIndex);
+                testCase.verifyNotEmpty(guardEndIndex, sprintf( ...
+                    '%s combineFigure guard must have a matching end.', filePath));
+                if isempty(guardEndIndex)
+                    continue
+                end
+
+                guardedIndices = (guardIndex + 1):(guardEndIndex - 1);
+                titleMatches = regexp(cellstr(codeOnly), ...
+                    '^\s*ex_title\s*=', 'once');
+                titleIndices = find(~cellfun('isempty', titleMatches));
+                testCase.verifyNumElements(titleIndices, 1, sprintf( ...
+                    '%s must build ex_title exactly once.', filePath));
+                guardedTitleIndices = intersect(titleIndices, guardedIndices);
+                testCase.verifyNumElements(guardedTitleIndices, 1, sprintf( ...
+                    '%s must build ex_title inside its combineFigure guard.', ...
+                    filePath));
+
+                guardedCombineIndices = intersect( ...
+                    combineIndices, guardedIndices);
+                testCase.verifyNumElements(guardedCombineIndices, 1, sprintf( ...
+                    '%s must call combineFigures inside its combineFigure guard.', ...
+                    filePath));
+
+                nestedExportIndices = guardedIndices( ...
+                    trimmedCode(guardedIndices) == "if exportImages");
+                testCase.verifyNumElements(nestedExportIndices, 1, sprintf( ...
+                    ['%s must guard the post-combine save with if exportImages ' ...
+                    'inside its combineFigure guard.'], filePath));
+                if numel(nestedExportIndices) ~= 1
+                    continue
+                end
+
+                exportGuardIndex = nestedExportIndices(1);
+                exportGuardEndIndex = test_exampleFunctions.findBlockEnd( ...
+                    trimmedCode, exportGuardIndex);
+                testCase.verifyNotEmpty(exportGuardEndIndex, sprintf( ...
+                    ['%s post-combine exportImages guard must have a matching ' ...
+                    'end.'], filePath));
+                if isempty(exportGuardEndIndex)
+                    continue
+                end
+                testCase.verifyLessThan(exportGuardEndIndex, guardEndIndex, ...
+                    sprintf(['%s post-combine exportImages guard must close ' ...
+                    'inside its combineFigure guard.'], filePath));
+
+                saveMatches = regexp(cellstr(codeOnly), ...
+                    '^\s*saveAll\s*\(\s*folder\s*\)', 'once');
+                saveIndices = find(~cellfun('isempty', saveMatches));
+                savesInCombineGuard = intersect(saveIndices, guardedIndices);
+                testCase.verifyNumElements(savesInCombineGuard, 1, sprintf( ...
+                    ['%s combineFigure guard must contain exactly one ' ...
+                    'saveAll(folder) call.'], filePath));
+                exportedIndices = (exportGuardIndex + 1): ...
+                    (exportGuardEndIndex - 1);
+                guardedSaveIndices = intersect(saveIndices, exportedIndices);
+                testCase.verifyNumElements(guardedSaveIndices, 1, sprintf( ...
+                    ['%s must save the combined figure exactly once inside ' ...
+                    'the nested exportImages guard.'], filePath));
+
+                if isscalar(guardedTitleIndices) && ...
+                        isscalar(guardedCombineIndices) && ...
+                        isscalar(guardedSaveIndices)
+                    testCase.verifyLessThan(guardedTitleIndices, ...
+                        guardedCombineIndices, sprintf( ...
+                        '%s must build ex_title before combining figures.', ...
+                        filePath));
+                    testCase.verifyLessThan(guardedCombineIndices, ...
+                        exportGuardIndex, sprintf( ...
+                        ['%s must combine figures before testing whether to ' ...
+                        'save them.'], filePath));
+                    testCase.verifyLessThan(guardedCombineIndices, ...
+                        guardedSaveIndices, sprintf( ...
+                        '%s must save after combining figures.', filePath));
+                end
+
+                if isscalar(combineAssignments)
+                    testCase.verifyLessThan(combineAssignments, guardIndex, ...
+                        sprintf(['%s must assign combineFigure before testing ' ...
+                        'its guard.'], filePath));
+                end
+            end
+
+            testCase.verifyEqual(numExportExamples, 83, ...
+                'Expected 83 official examples that declare exportImages.');
+        end
+
         function exportFoldersCoverSupportedFormats(testCase)
             testFolder = fileparts(mfilename('fullpath'));
             repositoryRoot = fileparts(testFolder);
@@ -147,6 +286,30 @@ classdef test_exampleFunctions < matlab.unittest.TestCase
                     expectedGuard, sprintf( ...
                     ['%s export-folder guard must include every supported ' ...
                     'format in canonical order.'], filePath));
+            end
+        end
+
+    end
+
+    methods (Static, Access = private)
+
+        function blockEndIndex = findBlockEnd(lines, blockStartIndex)
+            blockStartPattern = ...
+                '^(?:if|for|parfor|while|switch|try|spmd)\>';
+            blockEndIndex = [];
+            blockDepth = 1;
+
+            for lineIndex = (blockStartIndex + 1):numel(lines)
+                line = char(lines(lineIndex));
+                if ~isempty(regexp(line, blockStartPattern, 'once'))
+                    blockDepth = blockDepth + 1;
+                elseif ~isempty(regexp(line, '^end\s*;?$', 'once'))
+                    blockDepth = blockDepth - 1;
+                    if blockDepth == 0
+                        blockEndIndex = lineIndex;
+                        return
+                    end
+                end
             end
         end
 

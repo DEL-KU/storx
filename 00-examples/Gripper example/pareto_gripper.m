@@ -2,6 +2,7 @@ function topopt = pareto_gripper(options)
 arguments
     options.vectorize (1,1) logical = true
     options.exportImages (1,1) logical = false
+    options.combineFigure (1,1) logical = false
     options.exportGIF (1,1) logical = false
     options.exportSTL (1,1) logical = false
     options.numElements (1,1) double {mustBeInteger,mustBePositive} = 10000
@@ -26,6 +27,7 @@ topoptClass = @pareto2d_elasticity;
 %% General Parameters
 vectorize = options.vectorize;
 exportImages = options.exportImages;
+combineFigure = options.combineFigure;
 exportGIF = options.exportGIF;
 exportSTL = options.exportSTL;
 
@@ -107,10 +109,12 @@ if exportImages
 end
 
 %% Plot Combined Figures
-ex_title = strjoin({example_name,'Combined '},' ');
-combineFigures(ex_title);
-if exportImages
-    saveAll(folder);%#ok
+if combineFigure
+    ex_title = strjoin({example_name,'Combined '},' ');
+    combineFigures(ex_title);
+    if exportImages
+        saveAll(folder);%#ok
+    end
 end
 if exportImages || exportGIF || exportSTL
     diary off

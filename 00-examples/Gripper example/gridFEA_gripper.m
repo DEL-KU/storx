@@ -2,6 +2,7 @@ function solver = gridFEA_gripper(options)
 arguments
     options.vectorize (1,1) logical = true
     options.exportImages (1,1) logical = false
+    options.combineFigure (1,1) logical = false
     options.numElements (1,1) double {mustBeInteger,mustBePositive} = 4000
     options.material (1,1) struct = struct('E',2e9,'nu',0.35,'rho',1300)
     options.force (1,1) double = 10
@@ -18,7 +19,7 @@ feaClass = @fea2d_elasticity;
 %% General Parameters
 vectorize = options.vectorize;
 exportImages = options.exportImages;
-
+combineFigure = options.combineFigure;
 %% File Path
 p = mfilename("fullpath");
 [path,example_name,~] = fileparts(p);
@@ -70,10 +71,12 @@ if exportImages
 end
 
 %% Plot Combined Figures
-ex_title = strjoin({example_name,'Combined '},' ');
-combineFigures(ex_title);
-if exportImages
-    saveAll(folder);%#ok
+if combineFigure
+    ex_title = strjoin({example_name,'Combined '},' ');
+    combineFigures(ex_title);
+    if exportImages
+        saveAll(folder);%#ok
+    end
 end
 if exportImages
     diary off

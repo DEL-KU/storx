@@ -1,6 +1,7 @@
 function topopt = windTunnel_drag(options)
 arguments
     options.exportImages (1,1) logical = false
+    options.combineFigure (1,1) logical = false
     options.exportGIF (1,1) logical = false
     options.interpolation (1,:) char = 'simp'
     options.update (1,:) char = 'MMA'
@@ -32,6 +33,7 @@ topoptClass = @density2d_fluid;
 
 %% General Parameters
 exportImages = options.exportImages;
+combineFigure = options.combineFigure;
 exportGIF = options.exportGIF;
 
 %% File Path
@@ -146,11 +148,13 @@ if exportImages
  end
 
 %% Plot Combined Figures
-ex_title = strjoin({'Desnity TO for Fluid ','Example',example_name},' ');
-combineFigures(ex_title);
-if exportImages 
-    saveAll(folder);%#ok
- end
+if combineFigure
+    ex_title = strjoin({'Desnity TO for Fluid ','Example',example_name},' ');
+    combineFigures(ex_title);
+    if exportImages
+        saveAll(folder);%#ok
+    end
+end
 if exportImages || exportGIF
     diary off
 end

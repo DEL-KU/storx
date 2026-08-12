@@ -3,6 +3,7 @@ arguments
     options.vectorize (1,1) logical = true
     options.uniformGrid (1,1) logical = true
     options.exportImages (1,1) logical = false
+    options.combineFigure (1,1) logical = false
     options.exportGIF (1,1) logical = false
     options.exportSTL (1,1) logical = false
     options.interpolation (1,:) char = 'none'
@@ -32,6 +33,7 @@ shapeoptClass = @standardHJ2d_thermal;
 vectorize = options.vectorize;
 uniformGrid = options.uniformGrid; % needed for the Hamilton-Jacobi solver
 exportImages = options.exportImages;
+combineFigure = options.combineFigure;
 exportGIF = options.exportGIF;
 exportSTL = options.exportSTL;
 
@@ -114,10 +116,12 @@ if exportSTL
 end
 
 %% Plot Combined Figures
-ex_title = strjoin({'Level-Set Topology Optimization for Thermal ','Example',example_name},' ');
-combineFigures(ex_title);
-if exportImages
-    saveAll(folder);%#ok
+if combineFigure
+    ex_title = strjoin({'Level-Set Topology Optimization for Thermal ','Example',example_name},' ');
+    combineFigures(ex_title);
+    if exportImages
+        saveAll(folder);%#ok
+    end
 end
 if exportImages || exportGIF || exportSTL
     diary off

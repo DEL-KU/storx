@@ -1,6 +1,7 @@
 function parOpt = paramOptMS_gripper(options)
 arguments
     options.exportImages (1,1) logical = false
+    options.combineFigure (1,1) logical = false
     options.exportGIF (1,1) logical = false
     options.initialParameters (1,6) double = [20,-15,4.0,10,-60,5.0]
     options.lowerBounds (1,6) double = [10,-10,1.0,5,-40,1.0]
@@ -27,6 +28,7 @@ warning('off','all')
 
 %% General Parameters
 exportImages = options.exportImages;
+combineFigure = options.combineFigure;
 exportGIF = options.exportGIF;
 
 %% File Path
@@ -99,11 +101,13 @@ if exportImages
  end
 
 %% Plot Combined Figures
-ex_title = strjoin({'Parametric Shape Opt. ','Example',example_name},' ');
-combineFigures(ex_title);
-if exportImages 
-    saveAll(folder);%#ok
- end
+if combineFigure
+    ex_title = strjoin({'Parametric Shape Opt. ','Example',example_name},' ');
+    combineFigures(ex_title);
+    if exportImages
+        saveAll(folder);%#ok
+    end
+end
 if exportImages || exportGIF
     diary off
 end

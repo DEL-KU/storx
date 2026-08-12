@@ -2,6 +2,7 @@ function fem = verticalBarTension(options)
 arguments
     options.vectorize (1,1) logical = true
     options.exportImages (1,1) logical = false
+    options.combineFigure (1,1) logical = false
     options.numElements (1,1) double {mustBeInteger,mustBePositive} = 1000
     options.material (1,1) struct = struct('E',2e11,'nu',0.28,'rho',1)
 end
@@ -13,6 +14,7 @@ elasticityClass = @fea2d_elasticity;
 %% General parameters
 vectorize = options.vectorize;
 exportImages = options.exportImages;
+combineFigure = options.combineFigure;
 
 %% File path
 p = mfilename("fullpath"); 
@@ -66,11 +68,13 @@ if exportImages
  end
 
 %% Plot Combined Figures
-ex_title = strjoin({'Elasticity ','Example',example_name},' ');
-combineFigures(ex_title);
-if exportImages 
-    saveAll(folder);%#ok
- end
+if combineFigure
+    ex_title = strjoin({'Elasticity ','Example',example_name},' ');
+    combineFigures(ex_title);
+    if exportImages
+        saveAll(folder);%#ok
+    end
+end
 if exportImages
     diary off
 end

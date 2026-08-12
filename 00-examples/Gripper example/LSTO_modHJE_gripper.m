@@ -3,6 +3,7 @@ arguments
     options.uniformGrid (1,1) logical = true
     options.vectorize (1,1) logical = true
     options.exportImages (1,1) logical = false
+    options.combineFigure (1,1) logical = false
     options.exportGIF (1,1) logical = false
     options.exportSTL (1,1) logical = false
     options.interpolation (1,:) char = 'none'
@@ -29,6 +30,7 @@ topoptClass = @modifiedHJ2d_elasticity;
 uniformGrid = options.uniformGrid; % needed for the Hamilton-Jacobi solver
 vectorize = options.vectorize;
 exportImages = options.exportImages;
+combineFigure = options.combineFigure;
 exportGIF = options.exportGIF;
 exportSTL = options.exportSTL;
 
@@ -113,10 +115,12 @@ if exportSTL
 end
 
 %% Plot Combined Figures
-ex_title = strjoin({'Level-set TO for Elasticity ','Example',example_name},' ');
-combineFigures(ex_title);
-if exportImages
-    saveAll(folder);%#ok
+if combineFigure
+    ex_title = strjoin({'Level-set TO for Elasticity ','Example',example_name},' ');
+    combineFigures(ex_title);
+    if exportImages
+        saveAll(folder);%#ok
+    end
 end
 if exportImages || exportGIF || exportSTL
     diary off

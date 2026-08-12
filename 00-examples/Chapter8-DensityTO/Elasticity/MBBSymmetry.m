@@ -2,6 +2,7 @@ function topopt = MBBSymmetry(options)
 arguments
     options.vectorize (1,1) logical = true
     options.exportImages (1,1) logical = false
+    options.combineFigure (1,1) logical = false
     options.exportGIF (1,1) logical = false
     options.exportSTL (1,1) logical = false
     options.interpolation (1,:) char = 'simp'
@@ -29,6 +30,7 @@ topoptClass = @density2d_elasticity;
 %% General Parameters
 vectorize = options.vectorize;
 exportImages = options.exportImages;
+combineFigure = options.combineFigure;
 exportGIF = options.exportGIF;
 exportSTL = options.exportSTL;
 
@@ -115,11 +117,13 @@ if exportSTL
 end
 
 %% Plot Combined Figures
-ex_title = strjoin({example_name,'Combined '},' ');
-combineFigures(ex_title);
-if exportImages 
-    saveAll(folder);%#ok
- end
+if combineFigure
+    ex_title = strjoin({example_name,'Combined '},' ');
+    combineFigures(ex_title);
+    if exportImages
+        saveAll(folder);%#ok
+    end
+end
 if exportImages || exportGIF || exportSTL
     diary off
 end
